@@ -1,0 +1,85 @@
+name: Deploy
+run-name: Deploy ${{ github.sha }}
+
+# Builds the site and pushes the build to the `deploy` branch, with this commit in REVISION.
+# Almaz checks that branch every minute (onnwee-me-update.timer), unpacks a new build into a
+# release folder and switches onnwee.me to it. This job holds no credential for the homelab;
+# it only waits until onnwee.me serves the new build. Pull requests are built and checked only.
+'on':
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  # Never cancel a build that is being published.
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Check and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.18.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm build
+      - name: Stamp the build with this commit
+        run: printf '%s\n' "$GITHUB_SHA" > dist/REVISION
+      - uses: actions/upload-artifact@v5
+        with:
+          name: site
+          path: dist
+          retention-days: 7
+
+  deploy:
+    name: Publish and wait for onnwee.me
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: site
+          path: dist
+      - name: Push the build to the deploy branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          grep -qx "$GITHUB_SHA" dist/REVISION
+          cd dist
+          git init -q -b deploy
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "Build of $GITHUB_SHA"
+          auth=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth" \
+            push -q --force "https://github.com/$GITHUB_REPOSITORY.git" deploy
+      - name: Wait for onnwee.me to serve this build
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 40); do
+            live=$(curl -fsS --max-time 10 "https://onnwee.me/REVISION?run=$GITHUB_RUN_ID-$attempt" || true)
+            if [ "$live" = "$GITHUB_SHA" ]; then
+              curl -fsS --max-time 10 https://onnwee.me/ | grep -q '<title>onnwee</title>'
+              echo "onnwee.me serves $GITHUB_SHA"; exit 0
+            fi
+            echo "onnwee.me serves ${live:-nothing yet}; waiting ($attempt/40)"; sleep 15
+          done
+          echo "onnwee.me did not switch to $GITHUB_SHA within 10 minutes" >&2; exit 1
