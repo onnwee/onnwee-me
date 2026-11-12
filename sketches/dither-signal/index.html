@@ -1,0 +1,475 @@
+<title>Dither Signal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Silkscreen:wght@400;700&family=VT323&display=swap">
+<style>
+/* Layout: a live 1-bit dithered stage fixed behind everything; content arrives as classic OS windows
+   collaged at uneven offsets. Each section owns one spot color, which the stage switches to with a glitch. */
+:root {
+  --ink: #000000;
+  --paper: #ffffff;
+  --acid: #b8ff1f;
+  --hot: #ff3bd4;
+  --signal: #27c4ff;
+  --alarm: #ff2e3a;
+  --uv: #b026ff;
+  --spot: var(--uv);
+  --face: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --display: "Jersey 10", "Silkscreen", ui-monospace, monospace;
+  --body: "VT323", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --ui: "Silkscreen", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--ink); }
+body {
+  background: transparent;
+  color: var(--paper);
+  font: 22px/1.3 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='30' shape-rendering='crispEdges'%3E%3Cpath d='M1 1v22l6-6 4 10 4-2-4-9h8z' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") 1 1, auto;
+}
+::selection { background: var(--spot); color: var(--ink); }
+:focus-visible { outline: 3px solid var(--spot); outline-offset: 3px; }
+
+#stage {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: -1; image-rendering: pixelated; background: var(--ink);
+}
+
+main {
+  max-width: 1120px; margin: 0 auto;
+  display: grid; gap: clamp(160px, 34vh, 360px);
+  padding-block: clamp(72px, 16vh, 180px) 120px;
+}
+section[data-spot="uv"]     { --local: var(--uv); }
+section[data-spot="acid"]   { --local: var(--acid); }
+section[data-spot="hot"]    { --local: var(--hot); }
+section[data-spot="signal"] { --local: var(--signal); }
+section[data-spot="alarm"]  { --local: var(--alarm); }
+
+/* Hero: the name is drawn into the dithered stage; this text holds its place and stays selectable */
+.hero { display: grid; gap: 28px; justify-items: start; }
+.mark { margin: 0; display: grid; gap: 10px; justify-items: start; font-weight: 400; }
+.mark-glyphs { display: block; font: 900 clamp(40px, 10.5vw, 144px)/1.1 var(--face); white-space: nowrap; color: var(--paper); }
+.gl .mark-glyphs { color: transparent; }
+.handle { font: 700 15px/1 var(--ui); letter-spacing: .08em; background: var(--paper); color: var(--ink); padding: 5px 10px 4px; }
+.tape { display: grid; gap: 6px; justify-items: start; margin: 0; }
+.tape span {
+  font-family: var(--display); font-size: clamp(34px, 6vw, 64px); line-height: 1;
+  background: var(--ink); color: var(--paper); padding: 4px 14px 2px;
+}
+.tape span:nth-child(2) { background: var(--local); color: var(--ink); margin-left: clamp(0px, 6vw, 80px); transform: rotate(-1.2deg); }
+
+/* Windows */
+.slot { position: relative; isolation: isolate; width: min(600px, 100%); }
+.win {
+  position: relative; z-index: 1;
+  background: var(--paper); color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--local);
+}
+.ghost { position: absolute; inset: 0; z-index: 0; pointer-events: none; box-shadow: none; will-change: transform; }
+.titlebar {
+  display: flex; align-items: center; gap: 10px; height: 26px; padding: 0 8px;
+  border-bottom: 2px solid var(--ink);
+  background: repeating-linear-gradient(var(--paper) 0 3px, var(--ink) 3px 4px) center / 100% 16px no-repeat, var(--paper);
+  font: 700 13px/1 var(--ui);
+}
+.titlebar .box { width: 14px; height: 14px; border: 2px solid var(--ink); background: var(--paper); flex: none; }
+.titlebar .name { background: var(--paper); padding: 0 8px; margin: 0 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.win-body { padding: 18px 20px 20px; display: grid; gap: 12px; }
+.win-body p { margin: 0; max-width: 52ch; }
+.statusbar {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  border-top: 2px solid var(--ink); padding: 4px 10px; font: 400 12px/1.4 var(--ui);
+}
+.win h3 { margin: 0; font: 400 52px/.85 var(--display); }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; }
+.facts div { display: flex; gap: 8px; }
+.facts dt { font: 400 12px/1.9 var(--ui); }
+.facts dd { margin: 0; }
+
+.buttons { display: flex; flex-wrap: wrap; gap: 14px; padding-top: 4px; }
+.btn {
+  font: 700 13px/1 var(--ui); color: var(--ink); background: var(--paper);
+  border: 2px solid var(--ink); border-radius: 7px; padding: 8px 18px; cursor: inherit;
+}
+.btn:active { background: var(--ink); color: var(--paper); }
+.btn.default { box-shadow: 0 0 0 2px var(--paper), 0 0 0 5px var(--ink); }
+
+/* Section heads sit on the stage as tape */
+.head { margin: 0 0 40px; font: 400 clamp(48px, 9vw, 104px)/.85 var(--display); }
+.head span { background: var(--local); color: var(--ink); padding: 2px 14px 0; }
+
+.work { display: grid; }
+.stack { display: flex; flex-direction: column; gap: clamp(56px, 10vh, 120px); }
+.stack .slot:nth-child(2) { align-self: flex-end; }
+.stack .slot:nth-child(3) { align-self: center; }
+
+/* Terminal window */
+.term .win-body { background: var(--ink); color: var(--local); padding: 18px 20px 24px; }
+.term ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.term li { display: grid; grid-template-columns: 11ch 1fr; gap: 14px; }
+.term time { color: var(--paper); font-variant-numeric: tabular-nums; }
+.term .cursor { display: inline-block; width: .6em; background: var(--local); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.contact { justify-self: center; width: min(460px, 100%); }
+.contact .win-body { grid-template-columns: auto 1fr; align-items: start; gap: 16px 18px; }
+.contact .icon { width: 48px; height: 48px; }
+.contact .buttons { grid-column: 1 / -1; justify-content: flex-end; }
+#cancel { transition: transform .12s steps(3); }
+.note { font: 400 12px/1.5 var(--ui); color: var(--paper); text-align: center; margin: 0; }
+
+#boot {
+  position: fixed; inset: 0; z-index: 20; background: var(--ink); color: var(--paper);
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));
+  font: 22px/1.35 var(--body); white-space: pre-wrap;
+}
+#boot b { color: var(--acid); font-weight: 400; }
+
+@media (max-width: 560px) {
+  body { font-size: 20px; }
+  .win h3 { font-size: 42px; }
+  .term li { grid-template-columns: 1fr; gap: 0; }
+  .contact .win-body { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ghost { display: none; }
+  .term .cursor { animation: none; }
+  #cancel { transition: none; }
+}
+</style>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+<div id="boot" aria-hidden="true"></div>
+
+<main>
+  <section class="hero" data-spot="uv" aria-labelledby="who">
+    <h1 class="mark" id="who"><span class="mark-glyphs" aria-hidden="true">⓪ηηωεε忧世</span><span class="handle">onnwee</span></h1>
+    <p class="tape"><span>I write software.</span><span>This is the only face you get.</span></p>
+
+    <div class="slot">
+      <div class="win">
+        <div class="titlebar"><span class="box"></span><span class="name">signal source</span></div>
+        <div class="win-body">
+          <p id="source-msg">The background is a test pattern run through a 1-bit dither. Load your own video or photo to see it through the same filter. The file stays in this browser.</p>
+          <div class="buttons">
+            <button class="btn default" id="load" type="button">Load footage</button>
+            <button class="btn" id="reset" type="button" hidden>Back to test pattern</button>
+          </div>
+          <input type="file" id="footage" accept="video/*,image/*" hidden>
+        </div>
+        <div class="statusbar"><span>or drop a file anywhere</span><span id="cells">cell 3px</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="work" data-spot="acid" aria-labelledby="work-h">
+    <h2 class="head" id="work-h"><span>Things I built</span></h2>
+    <div class="stack">
+      <div class="slot">
+        <article class="win">
+          <div class="titlebar"><span class="box"></span><span class="name">ghostpaste</span></div>
+          <div class="win-body">
+            <h3>ghostpaste</h3>
+            <p>A pastebin that deletes every paste after 24 hours and writes no access logs.</p>
+            <dl class="facts"><div><dt>built with</dt><dd>Go, SQLite</dd></div><div><dt>state</dt><dd>running</dd></div></dl>
+          </div>
+          <div class="statusbar"><span>sample entry</span><span>2 files open</span></div>
+        </article>
+      </div>
+      <div class="slot">
+        <article class="win">
+          <div class="titlebar"><span class="box"></span><span class="name">dither</span></div>
+          <div class="win-body">
+            <h3>dither</h3>
+            <p>The renderer behind this page. A WebGL shader that turns any video into ordered-dither signal with one spot color.</p>
+            <dl class="facts"><div><dt>built with</dt><dd>WebGL2</dd></div><div><dt>state</dt><dd>you are looking at it</dd></div></dl>
+          </div>
+          <div class="statusbar"><span>sample entry</span><span>8×8 bayer</span></div>
+        </article>
+      </div>
+      <div class="slot">
+        <article class="win">
+          <div class="titlebar"><span class="box"></span><span class="name">noface</span></div>
+          <div class="win-body">
+            <h3>noface</h3>
+            <p>A command-line tool that strips EXIF, GPS and device tags from photos and video before you post them.</p>
+            <dl class="facts"><div><dt>built with</dt><dd>Rust</dd></div><div><dt>state</dt><dd>v0.3</dd></div></dl>
+          </div>
+          <div class="statusbar"><span>sample entry</span><span>0 tags left</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section data-spot="signal" aria-labelledby="log-h">
+    <h2 class="head" id="log-h"><span>Notes</span></h2>
+    <div class="slot">
+      <div class="win term">
+        <div class="titlebar"><span class="box"></span><span class="name">~/notes — sample entries</span></div>
+        <div class="win-body">
+          <ol>
+            <li><time datetime="2026-11-02">2026-11-02</time><span>Scroll-scrubbed video needs every frame as a keyframe</span></li>
+            <li><time datetime="2026-10-19">2026-10-19</time><span>What your phone writes into a photo</span></li>
+            <li><time datetime="2026-09-30">2026-09-30</time><span>An 8×8 Bayer matrix in three lines of GLSL</span></li>
+            <li><time datetime="2026-09-12">2026-09-12</time><span>Running a pastebin that cannot remember you<span class="cursor">&nbsp;</span></span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-spot="hot" aria-labelledby="contact-h" style="display:grid; gap:28px">
+    <div class="slot contact">
+      <div class="win" role="dialog" aria-labelledby="contact-h">
+        <div class="titlebar"><span class="box"></span><span class="name">contact</span></div>
+        <div class="win-body">
+          <svg class="icon" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="var(--uv)" stroke="var(--ink)" stroke-width="4"/><circle cx="15.5" cy="18" r="2.6" fill="var(--ink)"/><circle cx="25" cy="17" r="2.6" fill="var(--ink)"/><path d="M7.5 32 L37 25" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/></svg>
+          <div style="display:grid; gap:8px; min-width:0">
+            <h2 id="contact-h" style="margin:0; font:400 34px/.9 var(--display)">There is no contact form.</h2>
+            <p id="contact-msg">Find me where the code is.</p>
+          </div>
+          <div class="buttons">
+            <button class="btn" id="cancel" type="button">Cancel</button>
+            <button class="btn default" id="ok" type="button">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="note">No cookies. No analytics. One face.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const root = document.documentElement;
+  const css = getComputedStyle(root);
+  const hex = n => { const h = css.getPropertyValue(n).trim().replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255); };
+  const SPOTS = { uv: hex('--uv'), acid: hex('--acid'), hot: hex('--hot'), signal: hex('--signal'), alarm: hex('--alarm') };
+  const INK = hex('--ink'), PAPER = hex('--paper');
+
+  /* Boot sequence: one orchestrated moment, skipped for reduced motion or any input */
+  const boot = document.getElementById('boot');
+  const lines = ['anon-boot 0.1', 'loading preliminary keymap ........ <b>ok</b>', 'mounting /dev/signal ............... <b>ok</b>', 'stripping metadata ................. <b>0 tags left</b>', 'identity ........................... <b>onnwee</b>'];
+  let bootDone = false;
+  const endBoot = () => { if (bootDone) return; bootDone = true; boot.hidden = true; revealAt = performance.now(); };
+  if (reduce) endBoot();
+  else {
+    lines.forEach((l, i) => setTimeout(() => { if (!bootDone) boot.innerHTML += l + '\n'; }, 140 + i * 170));
+    setTimeout(endBoot, 140 + lines.length * 170 + 280);
+    ['keydown', 'pointerdown', 'wheel', 'touchstart'].forEach(e => addEventListener(e, endBoot, { once: true, passive: true }));
+  }
+
+  /* Window trails: clones that lag behind on scroll, like a frozen OS redrawing too slowly */
+  const GHOSTS = 5, ghostSets = [];
+  if (!reduce) document.querySelectorAll('.slot').forEach(slot => {
+    const win = slot.querySelector('.win'), set = [];
+    for (let i = 1; i <= GHOSTS; i++) {
+      const g = win.cloneNode(true);
+      g.classList.add('ghost'); g.setAttribute('aria-hidden', 'true'); g.inert = true;
+      g.removeAttribute('role'); g.removeAttribute('aria-labelledby');
+      g.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+      g.style.zIndex = -i;
+      slot.insertBefore(g, win); set.push(g);
+    }
+    ghostSets.push(set);
+  });
+
+  /* Contact dialog */
+  const msg = document.getElementById('contact-msg'), cancel = document.getElementById('cancel');
+  document.getElementById('ok').onclick = () => { msg.textContent = 'Acknowledged. Still no form.'; glitch = 1; };
+  cancel.onclick = () => { msg.textContent = 'Nothing to cancel.'; };
+  cancel.addEventListener('pointerenter', e => {
+    if (reduce || e.pointerType !== 'mouse') return;
+    cancel.style.transform = `translate(${(Math.random() * 2 - 1) * 90 | 0}px, ${(Math.random() * 2 - 1) * 40 | 0}px)`;
+  });
+
+  /* Stage */
+  const stage = document.getElementById('stage');
+  const gl = stage.getContext('webgl2', { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
+  const src = document.createElement('canvas'), sx = src.getContext('2d');
+  let media = null, glitch = 0, revealAt = Infinity, vel = 0, lastY = scrollY, currentSpot = 'uv';
+
+  let sizeDirty = true;
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    stage.width = Math.round(innerWidth * dpr); stage.height = Math.round(innerHeight * dpr);
+    src.width = 480; src.height = Math.min(1000, Math.round(480 * innerHeight / innerWidth));
+    sizeDirty = true;
+  }
+  addEventListener('resize', resize); resize();
+
+  function drawPattern(t, p) {
+    const W = src.width, H = src.height, m = Math.min(W, H);
+    sx.fillStyle = '#000'; sx.fillRect(0, 0, W, H);
+    const cx = W * (0.72 - 0.44 * p), cy = H * (0.42 + 0.08 * Math.sin(t * 0.4));
+    const step = m * 0.07, n = 18;
+    sx.lineWidth = step * 0.42;
+    for (let i = 0; i < n; i++) {
+      const r = Math.max(0, (i * step + t * step * 0.8) % (n * step));
+      sx.strokeStyle = `rgba(255,255,255,${0.55 * (1 - r / (n * step))})`;
+      sx.beginPath(); sx.arc(cx, cy, r, 0, Math.PI * 2); sx.stroke();
+    }
+    /* The face: shaded so its midtones dither into the spot color */
+    const R = m * 0.25, bx = W * (0.74 - 0.48 * p), by = H * (0.55 - 0.15 * p) + Math.sin(t * 0.7) * m * 0.03;
+    const g = sx.createRadialGradient(bx - R * 0.4, by - R * 0.45, R * 0.05, bx, by, R);
+    g.addColorStop(0, '#cfcfcf'); g.addColorStop(0.35, '#6a6a6a'); g.addColorStop(1, '#2a2a2a');
+    sx.fillStyle = g; sx.beginPath(); sx.arc(bx, by, R, 0, Math.PI * 2); sx.fill();
+    sx.lineCap = 'round';
+    sx.strokeStyle = '#fff'; sx.lineWidth = R * 0.05; sx.beginPath(); sx.arc(bx - R * 0.06, by, R * 1.07, 0, Math.PI * 2); sx.stroke();
+    sx.strokeStyle = '#000'; sx.lineWidth = R * 0.13; sx.beginPath(); sx.arc(bx, by, R, 0, Math.PI * 2); sx.stroke();
+    const blink = !reduce && (t % 4.2) < 0.12 ? 0.15 : 1;
+    sx.fillStyle = '#000';
+    for (const [ex, ey] of [[-0.32, -0.2], [0.18, -0.24]]) { sx.beginPath(); sx.ellipse(bx + ex * R, by + ey * R, R * 0.1, R * 0.1 * blink, 0, 0, Math.PI * 2); sx.fill(); }
+    sx.lineWidth = R * 0.12; sx.beginPath(); sx.moveTo(bx - R * 0.78, by + R * 0.55); sx.lineTo(bx + R * 0.9, by + R * 0.12); sx.stroke();
+    sx.font = `${Math.round(H * 0.34)}px "Jersey 10", monospace`;
+    sx.fillStyle = 'rgba(255,255,255,0.22)';
+    const tw = sx.measureText('NO SIGNAL  ').width;
+    const off = -((t * 24) % tw);
+    for (let x = off; x < W; x += tw) sx.fillText('NO SIGNAL', x, H * 0.97);
+  }
+  /* The name, drawn where the hero's placeholder text sits so it scrolls with the page */
+  const markEl = document.querySelector('.mark-glyphs');
+  let markSize = 0;
+  const faceFont = css.getPropertyValue('--face').trim();
+  function drawName() {
+    if (sizeDirty) { markSize = parseFloat(getComputedStyle(markEl).fontSize); sizeDirty = false; }
+    const rc = markEl.getBoundingClientRect();
+    if (rc.bottom < 0 || rc.top > innerHeight) return;
+    const k = src.width / innerWidth, fs = markSize * k, txt = markEl.textContent;
+    const x = rc.left * k, y = (rc.top + rc.height / 2) * k;
+    sx.font = `900 ${fs}px ${faceFont}`; sx.textBaseline = 'middle'; sx.lineJoin = 'round';
+    sx.lineWidth = fs * 0.16; sx.strokeStyle = '#000'; sx.strokeText(txt, x, y);
+    sx.fillStyle = '#7a7a7a'; sx.fillText(txt, x + fs * 0.05, y + fs * 0.03);
+    sx.fillStyle = '#fff'; sx.fillText(txt, x, y);
+  }
+  function drawMedia() {
+    const W = src.width, H = src.height;
+    const mw = media.videoWidth || media.naturalWidth, mh = media.videoHeight || media.naturalHeight;
+    if (!mw || !mh) return drawPattern(0, 0);
+    const s = Math.max(W / mw, H / mh), dw = mw * s, dh = mh * s;
+    sx.drawImage(media, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+
+  /* Footage loading: object URLs only, nothing leaves the browser */
+  const input = document.getElementById('footage'), sourceMsg = document.getElementById('source-msg'), resetBtn = document.getElementById('reset');
+  const defaultMsg = sourceMsg.textContent;
+  function loadFile(f) {
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    if (f.type.startsWith('video/')) {
+      const v = document.createElement('video');
+      v.muted = true; v.loop = true; v.playsInline = true; v.src = url;
+      v.onerror = () => { sourceMsg.textContent = 'This browser could not play that file. Try an MP4 (H.264) or WebM video.'; };
+      v.play().catch(() => {}); media = v;
+    } else if (f.type.startsWith('image/')) {
+      const im = new Image(); im.src = url; media = im;
+    } else { sourceMsg.textContent = 'That file is not a video or an image. Load an MP4, WebM, JPEG or PNG.'; return; }
+    sourceMsg.textContent = `Showing ${f.name}. It is not uploaded anywhere.`;
+    resetBtn.hidden = false; glitch = 1;
+  }
+  document.getElementById('load').onclick = () => input.click();
+  input.onchange = () => loadFile(input.files[0]);
+  resetBtn.onclick = () => { if (media && media.pause) media.pause(); media = null; sourceMsg.textContent = defaultMsg; resetBtn.hidden = true; glitch = 1; };
+  addEventListener('dragover', e => e.preventDefault());
+  addEventListener('drop', e => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); });
+
+  const sections = [...document.querySelectorAll('section[data-spot]')];
+  const cellsLabel = document.getElementById('cells');
+
+  if (!gl) { stage.hidden = true; return; }
+  root.classList.add('gl'); resize();
+
+  const sh = (type, s) => { const o = gl.createShader(type); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(o)); return o; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, `#version 300 es
+    in vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, `#version 300 es
+    precision highp float;
+    uniform sampler2D uSrc; uniform vec2 uRes; uniform float uPix, uGlitch, uTime;
+    uniform vec3 uInk, uPaper, uSpot;
+    out vec4 o;
+    float b2(vec2 a){ a = floor(a); return fract(dot(a, vec2(.5, a.y * .75))); }
+    float b4(vec2 a){ return b2(.5 * a) * .25 + b2(a); }
+    float b8(vec2 a){ return b4(.5 * a) * .25 + b2(a); }
+    float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    void main(){
+      vec2 cell = floor(gl_FragCoord.xy / uPix);
+      vec2 uv = (cell + .5) * uPix / uRes;
+      float band = floor(cell.y / 5.), tick = floor(uTime * 24.);
+      if (h(vec2(band, tick)) < uGlitch * .6) uv.x += (h(vec2(band, tick + 3.1)) - .5) * .4 * uGlitch;
+      float l = dot(texture(uSrc, fract(uv)).rgb, vec3(.299, .587, .114));
+      l = smoothstep(.04, .96, l);
+      float lv = clamp(floor(l * 2. + b8(cell) * .98 + .01), 0., 2.);
+      o = vec4(lv < .5 ? uInk : (lv < 1.5 ? uSpot : uPaper), 1.);
+    }`));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  const U = n => gl.getUniformLocation(prog, n);
+  const u = { res: U('uRes'), pix: U('uPix'), glitch: U('uGlitch'), time: U('uTime'), ink: U('uInk'), paper: U('uPaper'), spot: U('uSpot') };
+  gl.uniform3fv(u.ink, INK); gl.uniform3fv(u.paper, PAPER);
+
+  const t0 = performance.now(); let lastT = t0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (document.hidden) return;
+    const dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000)); lastT = now;
+    const t = reduce ? 0 : Math.max(0, (now - t0) / 1000);
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    const p = Math.min(1, Math.max(0, scrollY / maxScroll));
+
+    /* Which section owns the middle of the screen */
+    let spot = sections[0].dataset.spot;
+    for (const s of sections) if (s.getBoundingClientRect().top < innerHeight * 0.55) spot = s.dataset.spot;
+    if (spot !== currentSpot) { currentSpot = spot; root.style.setProperty('--spot', `var(--${spot})`); if (!reduce) glitch = 1; }
+
+    /* Scroll velocity drives trails and a little signal tearing */
+    const dy = scrollY - lastY; lastY = scrollY;
+    vel += (dy - vel) * 0.18;
+    if (!reduce) {
+      ghostSets.forEach(set => set.forEach((g, i) => {
+        const k = i + 1, y = Math.max(-46, Math.min(46, vel * 1.6 * k)), x = Math.max(-30, Math.min(30, vel * 0.9 * k));
+        g.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+      }));
+      glitch = Math.max(glitch * Math.pow(0.02, dt), Math.min(0.5, Math.abs(vel) / 90));
+    }
+
+    /* Cell size: resolves on load, degrades toward the end of the page */
+    let pix = 3 + 5 * p * p;
+    if (!reduce && revealAt !== Infinity) pix += 22 * Math.max(0, 1 - (now - revealAt) / 900);
+    if (!bootDone && !reduce) pix = 26;
+    const cell = Math.max(2, Math.round(pix));
+    cellsLabel.textContent = `cell ${cell}px`;
+
+    if (media) drawMedia(); else drawPattern(t, p);
+    drawName();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+    const dpr = stage.width / innerWidth;
+    gl.viewport(0, 0, stage.width, stage.height);
+    gl.uniform2f(u.res, stage.width, stage.height);
+    gl.uniform1f(u.pix, cell * dpr);
+    gl.uniform1f(u.glitch, reduce ? 0 : glitch);
+    gl.uniform1f(u.time, t);
+    gl.uniform3fv(u.spot, SPOTS[currentSpot]);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

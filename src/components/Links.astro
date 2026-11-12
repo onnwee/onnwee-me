@@ -1,0 +1,10 @@
+---
+/* The author's links as a row of icons. Each has its name as a label for screen readers and a tooltip. */
+import Icon from './Icon.astro';
+import { LINKS } from '../site';
+---
+<ul class="links">
+  {LINKS.map((l) => (
+    <li><a href={l.href} aria-label={l.label} title={l.label} rel={l.href.startsWith('http') ? 'me noopener' : undefined}><Icon name={l.icon} /></a></li>
+  ))}
+</ul>

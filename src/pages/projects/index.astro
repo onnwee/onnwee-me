@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title="Things I built · onnwee" description="Software by onnwee: what each project does and what it is built with.">
+  {/* The section is called "work" so the crowd in sprites.ts finds it */}
+  <section id="work" data-spot="acid" data-ch="02" data-name="things I built" aria-labelledby="work-h">
+    <h1 class="head" id="work-h"><span class="ch" aria-hidden="true">CH 02</span><span>Things I built</span></h1>
+    <p class="crumb"><a class="back" href="/">Back to CH 01</a></p>
+    <div class="stack">
+      {projects.map(({ id, data }) => (
+        <Window title={data.name} article status={[data.sample ? 'sample entry' : data.state, data.status]}>
+          <h2 class="card-title"><a href={`/projects/${id}/`}>{data.name}</a></h2>
+          <p>{data.summary}</p>
+          <dl class="facts">
+            <div><dt>built with</dt><dd>{data.stack}</dd></div>
+            <div><dt>state</dt><dd>{data.state}</dd></div>
+          </dl>
+        </Window>
+      ))}
+    </div>
+  </section>
+</Base>

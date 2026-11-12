@@ -1,0 +1,19 @@
+---
+interface Props {
+  title: string;
+  status?: [string, string];
+  term?: boolean;
+  article?: boolean;
+  slotClass?: string;
+  dialogLabel?: string;
+}
+const { title, status, term = false, article = false, slotClass, dialogLabel } = Astro.props;
+const Tag = article ? 'article' : 'div';
+---
+<div class:list={['slot', slotClass]}>
+  <Tag class:list={['win', { term }]} role={dialogLabel ? 'dialog' : undefined} aria-labelledby={dialogLabel}>
+    <div class="titlebar"><span class="box"></span><span class="name">{title}</span></div>
+    <div class="win-body"><slot /></div>
+    {status && <div class="statusbar"><span>{status[0]}</span><span>{status[1]}</span></div>}
+  </Tag>
+</div>

@@ -1,0 +1,193 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Window from '../components/Window.astro';
+import Face from '../components/Face.astro';
+import Links from '../components/Links.astro';
+import { allPosts, iso } from '../scripts/posts';
+import { DESCRIPTION, NOW } from '../site';
+
+const allProjects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+/* The home page shows the first three; the rest are on /projects/ */
+const projects = allProjects.slice(0, 3);
+const posts = await allPosts();
+/* The home page shows the newest few; the rest are on /blog/ */
+const notes = posts.slice(0, 4);
+
+/* Channel surf: each clip is its own channel, scrubbed by scrolling through it */
+const channels = [
+  { clip: 'flare', ch: '13', spot: 'blood', line: 'Somebody lights a flare.' },
+  { clip: 'crowd', ch: '27', spot: 'acid', line: 'A crowd. Nobody in particular.' },
+  { clip: 'patrol-lights', ch: '31', spot: 'hot', line: 'Blue lights, downtown.' },
+  { clip: 'fire', ch: '44', spot: 'blood', line: 'Fire.' },
+  { clip: 'radar', ch: '58', spot: 'acid', line: 'Sweep. Nothing. Sweep.' },
+  { clip: 'tv-wall', ch: '66', spot: 'signal', line: 'Nine screens of the same sea.' },
+];
+---
+<Base title="onnwee" description={DESCRIPTION}>
+{/* Warning tape, switched off for now. Remove this comment wrapper to bring it back.
+  <svg class="defs" aria-hidden="true" focusable="false">
+    <!-- Worn warning tape: wobbly torn edges, grime blotches, and small holes worn through -->
+    <filter id="tape-wear" x="-2%" y="-40%" width="104%" height="180%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015 0.3" numOctaves="3" seed="4" result="warp" />
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="5" xChannelSelector="R" yChannelSelector="G" result="torn" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="4" seed="11" result="blotch" />
+      <feColorMatrix in="blotch" type="matrix" values="1.6 0 0 0 0.05  1.6 0 0 0 0.05  1.6 0 0 0 0.05  0 0 0 0 1" result="grime" />
+      <feBlend in="torn" in2="grime" mode="multiply" result="grimy" />
+      <feComposite in="grimy" in2="torn" operator="in" result="dirty" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="23" result="grain" />
+      <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -10 0 0 0 7.6" result="holes" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.035 0.12" numOctaves="2" seed="7" result="patch" />
+      <feColorMatrix in="patch" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -14 0 0 0 10.3" result="patches" />
+      <feComposite in="dirty" in2="holes" operator="in" result="pitted" />
+      <feComposite in="pitted" in2="patches" operator="in" />
+    </filter>
+  </svg>
+*/}
+  <section id="hero" class="hero" data-spot="uv" data-ch="01" data-name="onnwee" aria-labelledby="who">
+    <h1 class="mark" id="who"><span class="mark-glyphs" lang="ja" aria-hidden="true">⓪ηηωεε<span class="thin">倦怠</span></span><span class="handle">onnwee</span></h1>
+    <p class="tape"><span>I write software.</span><span>This is the only face you get.</span></p>
+    <p class="now"><span>now</span>{NOW.text} <time datetime={NOW.date}>{NOW.date}</time></p>
+    <nav class="buttons" aria-label="Pages">
+      <a class="btn" href="/blog/">Blog</a>
+      <a class="btn" href="/projects/">Things I built</a>
+      <a class="btn" href="/colophon/">How this works</a>
+      <button class="btn replay" id="replay-intro" type="button">Replay intro</button>
+    </nav>
+
+    <Window title="signal source" status={['or drop a file anywhere', 'cell 3px']}>
+      <p id="source-msg">The background is a test pattern run through a 1-bit dither. Load your own video or photo to see it through the same filter. The file stays in this browser.</p>
+      <div class="buttons">
+        <button class="btn default" id="load" type="button">Load footage</button>
+        <button class="btn" id="reset" type="button" hidden>Back to test pattern</button>
+      </div>
+      <input type="file" id="footage" accept="video/*,image/*" hidden />
+    </Window>
+  </section>
+
+  <section id="work" data-spot="acid" data-ch="02" data-name="things I built" aria-labelledby="work-h">
+    {/* Warning tape, switched off for now. Remove this comment wrapper to bring it back.
+<div class="strip hot" aria-hidden="true">{Array.from({ length: 12 }, () => <span>CONSENT ASSUMED</span>)}</div>
+*/}
+    <h2 class="head" id="work-h"><span class="ch" aria-hidden="true">CH 02</span><span>Things I built</span></h2>
+    <div class="stack">
+      {projects.map(({ id, data }) => (
+        <Window title={data.name} article status={[data.sample ? 'sample entry' : data.state, data.status]}>
+          <h3><a href={`/projects/${id}/`}>{data.name}</a></h3>
+          <p>{data.summary}</p>
+          <dl class="facts">
+            <div><dt>built with</dt><dd>{data.stack}</dd></div>
+            <div><dt>state</dt><dd>{data.state}</dd></div>
+          </dl>
+        </Window>
+      ))}
+    </div>
+    <p class="more"><a class="btn" href="/projects/">All {allProjects.length} things</a></p>
+  </section>
+
+  <section id="notes" data-spot="signal" data-ch="03" data-name="blog" aria-labelledby="log-h">
+    <h2 class="head" id="log-h"><span class="ch" aria-hidden="true">CH 03</span><span>Blog</span></h2>
+    <Window title={notes.some((n) => n.data.sample) ? '~/blog — sample entries' : '~/blog'} term status={[`${posts.length} posts`, 'newest first']}>
+      <ol>
+        {notes.map((n, i) => (
+          <li>
+            <time datetime={iso(n.data.date)}>{iso(n.data.date)}</time>
+            <span><a href={`/blog/${n.id}/`}>{n.data.title}</a>{i === notes.length - 1 && <span class="cursor" aria-hidden="true">&nbsp;</span>}</span>
+          </li>
+        ))}
+      </ol>
+      <div class="buttons"><a class="btn" href="/blog/">All posts</a></div>
+    </Window>
+  </section>
+
+  <section id="file" data-spot="hot" data-ch="04" data-name="on file" aria-labelledby="file-h">
+    <h2 class="head" id="file-h"><span class="ch" aria-hidden="true">CH 04</span><span>On file</span></h2>
+    <Window title="record 000000" article status={['front and side', '1912']}>
+      <h3>Hold still.</h3>
+      <p>Alphonse Bertillon's system filed a person by measurement: head, arm, ear, then a photograph from the front and one from the side. This card is his own, from 1912.</p>
+      <p>The camera at the bottom of this page doesn't ask you to hold still.</p>
+      <dl class="facts">
+        <div><dt>subject</dt><dd>unknown</dd></div>
+        <div><dt>match</dt><dd>99.1%</dd></div>
+        <div><dt>consent</dt><dd>assumed</dd></div>
+      </dl>
+    </Window>
+  </section>
+
+  <section id="tower" data-spot="acid" data-ch="05" data-name="watchtower" aria-labelledby="tower-h">
+    <h2 class="head" id="tower-h"><span class="ch" aria-hidden="true">CH 05</span><span>Watchtower</span></h2>
+    <Window title="inspection house" article status={['the cameras follow your pointer', '1791']}>
+      <h3>One guard.</h3>
+      <p>Jeremy Bentham's Panopticon: a ring of cells around a single inspector, who can see every cell and can't be seen from any of them. Drawn in 1791. His own was never built.</p>
+      <p>It didn't need to be. You only have to think somebody might be looking.</p>
+    </Window>
+  </section>
+
+  <section id="surf" data-spot="signal" data-ch="06" data-name="nothing on" aria-labelledby="surf-h">
+    <h2 class="head" id="surf-h"><span class="ch" aria-hidden="true">CH 06</span><span>Nothing on</span></h2>
+    <Window title="remote" status={['scroll to change the channel', '6 channels']}>
+      <p>Six channels and nothing on. Scroll down to change the channel; scroll slowly to watch one.</p>
+    </Window>
+  </section>
+
+  {channels.map((c) => (
+    <section class="reel surf" data-spot={c.spot} data-ch={c.ch} data-name={c.clip.replace('-', ' ')} data-scrub={`/media/${c.clip}.mp4`} data-no-trail aria-label={`Channel ${c.ch}`}>
+      <div class="reel-track">
+        <Window title={`CH ${c.ch}`} slotClass="reel-card">
+          <p>{c.line}</p>
+        </Window>
+      </div>
+    </section>
+  ))}
+
+  <section id="reel" class="reel" data-spot="blood" data-ch="07" data-name="late show" data-scrub="/media/cemetery.mp4" data-no-trail aria-labelledby="reel-h">
+    <h2 class="head" id="reel-h"><span class="ch" aria-hidden="true">CH 07</span><span>Late show</span></h2>
+    <div class="reel-track">
+      <Window title="projector" slotClass="reel-card" status={['scroll to run the reel', '1968']}>
+        <p>Night of the Living Dead (1968). Barbra, in the cemetery, watching. Public domain. Scroll down to run the reel; scroll up to rewind it.</p>
+      </Window>
+    </div>
+  </section>
+
+  <section id="dead" class="dead" data-spot="uv" data-ch="08" data-name="roll call" aria-labelledby="dead-h">
+    <h2 class="head" id="dead-h"><span class="ch" aria-hidden="true">CH 08</span><span>Roll call</span></h2>
+    <Window title="attendance" article status={['everyone present', 'about 1910']}>
+      <h3>All here.</h3>
+      <p>José Guadalupe Posada drew Mexico City as skeletons: the rich in their hats, the poor, the passengers on the tram. Same bones under every hat.</p>
+      <p>The one leaning on the tomb is from Vesalius, 1543. He has been thinking it over for a while.</p>
+    </Window>
+  </section>
+
+  <section id="contact" data-spot="hot" data-ch="09" data-name="contact" aria-labelledby="contact-h" style="display:grid; gap:28px">
+    {/* Warning tape, switched off for now. Remove this comment wrapper to bring it back.
+<div class="strip acid" aria-hidden="true">{Array.from({ length: 12 }, () => <span>YOU AGREED TO THIS</span>)}</div>
+*/}
+    <Window title="contact" slotClass="contact" dialogLabel="contact-h">
+      <Face class="icon" />
+      <div style="display:grid; gap:8px; min-width:0">
+        <h2 id="contact-h" style="margin:0; font:400 34px/.9 var(--display)">There is no contact form.</h2>
+        <p id="contact-msg">Find me where the code is.</p>
+      </div>
+      <Links />
+      <div class="buttons">
+        <button class="btn" id="cancel" type="button">Cancel</button>
+        <button class="btn default" id="ok" type="button">OK</button>
+      </div>
+    </Window>
+    <p class="footnote">No cookies. No analytics. One face. <a href="/colophon/">How this works</a>.</p>
+  </section>
+</Base>
+
+<script>
+  import { kickGlitch } from '../scripts/stage';
+  import { reduceMotion } from '../scripts/motion';
+
+  const msg = document.getElementById('contact-msg')!;
+  const cancel = document.getElementById('cancel')!;
+  document.getElementById('ok')!.addEventListener('click', () => { msg.textContent = 'Acknowledged. Still no form.'; kickGlitch(); });
+  cancel.addEventListener('click', () => { msg.textContent = 'Nothing to cancel.'; });
+  cancel.addEventListener('pointerenter', (e) => {
+    if (reduceMotion || e.pointerType !== 'mouse') return;
+    cancel.style.transform = `translate(${((Math.random() * 2 - 1) * 90) | 0}px, ${((Math.random() * 2 - 1) * 40) | 0}px)`;
+  });
+</script>

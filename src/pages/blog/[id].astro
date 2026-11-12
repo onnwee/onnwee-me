@@ -1,0 +1,32 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import { allPosts, iso, minutes } from '../../scripts/posts';
+
+export async function getStaticPaths() {
+  const posts = await allPosts();
+  /* newest first, so the older post is the next one in the list */
+  return posts.map((post, i) => ({ params: { id: post.id }, props: { post, newer: posts[i - 1], older: posts[i + 1] } }));
+}
+
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const date = iso(post.data.date);
+---
+<Base title={`${post.data.title} · onnwee`} description={post.data.summary ?? post.data.title} image={`/og/${post.id}.png`}>
+  <section class="note-page" data-spot="signal" aria-labelledby="note-h">
+    <Window title={`~/blog/${post.id}.md`} term article status={[post.data.sample ? 'sample entry' : `${minutes(post)} min read`, date]}>
+      <a class="back" href="/blog/">Back to the blog</a>
+      <h1 id="note-h">{post.data.title}</h1>
+      <p class="meta"><time datetime={date}>{date}</time>{post.data.tags.map((t) => <span> · {t}</span>)}</p>
+      <div class="prose"><Content /></div>
+      {(newer || older) && (
+        <nav class="pager" aria-label="More posts">
+          {older ? <a href={`/blog/${older.id}/`}><span>older</span>{older.data.title}</a> : <span></span>}
+          {newer ? <a class="newer" href={`/blog/${newer.id}/`}><span>newer</span>{newer.data.title}</a> : <span></span>}
+        </nav>
+      )}
+    </Window>
+  </section>
+</Base>

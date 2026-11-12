@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Icon from '../../components/Icon.astro';
+
+export async function getStaticPaths() {
+  const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+---
+<Base title={`${data.name} · onnwee`} description={data.summary}>
+  <section id="work" class="project-page" data-spot="acid" data-ch="02" data-name={data.name} aria-labelledby="project-h">
+    <Window title={data.name} article status={[data.sample ? 'sample entry' : data.state, data.status]}>
+      <a class="back" href="/projects/">Back to things I built</a>
+      <h1 id="project-h" class="card-title">{data.name}</h1>
+      <p>{data.summary}</p>
+      <dl class="facts">
+        <div><dt>built with</dt><dd>{data.stack}</dd></div>
+        <div><dt>state</dt><dd>{data.state}</dd></div>
+      </dl>
+      <div class="prose on-paper"><Content /></div>
+      {(data.repo || data.url) && (
+        <ul class="links">
+          {data.repo && <li><a href={data.repo} aria-label="Source code" title="Source code" rel="noopener"><Icon name="code" /></a></li>}
+          {data.url && <li><a href={data.url} aria-label="Open it" title="Open it" rel="noopener"><Icon name="open" /></a></li>}
+        </ul>
+      )}
+    </Window>
+  </section>
+</Base>

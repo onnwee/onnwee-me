@@ -1,0 +1,71 @@
+---
+import '@fontsource/jersey-10';
+import '@fontsource/silkscreen/400.css';
+import '@fontsource/silkscreen/700.css';
+import '@fontsource/vt323';
+import '@fontsource/creepster';
+import '@fontsource/im-fell-english-sc';
+import '../styles/global.css';
+
+interface Props { title: string; description: string; intro?: boolean; scene?: string; image?: string }
+const { title, description, intro = true, scene, image = '/og.png' } = Astro.props;
+/* Link previews want an absolute URL, built from `site` in astro.config.mjs */
+const ogImage = Astro.site ? new URL(image, Astro.site).href : image;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="onnwee" href="/rss.xml" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <title>{title}</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline define:vars={{ INTRO: intro }}>
+      /* Hold still if the system or the visitor asked for that; otherwise play the intro on the first page of a visit */
+      (function () {
+        var seen = false, motion = '';
+        try { seen = !!sessionStorage.getItem('booted'); motion = localStorage.getItem('motion') || ''; } catch (e) {}
+        var still = motion ? motion === 'off' : matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (still) document.documentElement.classList.add('still');
+        if (!seen && !still && INTRO) document.documentElement.classList.add('intro');
+      })();
+    </script>
+  </head>
+  <body data-scene={scene}>
+    <a class="skip" href="#main">Skip to the page</a>
+    <canvas id="stage" aria-hidden="true"></canvas>
+    <div id="intro" aria-hidden="true">
+      <div class="intro-dialogs"></div>
+      <p class="intro-skip">Press any key or click to skip</p>
+    </div>
+    <div class="osd" id="osd" aria-hidden="true"><span class="osd-ch"></span><span class="osd-name"></span></div>
+    <main id="main" tabindex="-1"><slot /></main>
+    <div class="dock" role="group" aria-label="Motion and sound">
+      <button class="btn" id="motion-toggle" type="button" aria-pressed="true">Motion on</button>
+      <button class="btn" id="sound-toggle" type="button" aria-pressed="false">Sound off</button>
+      <button class="btn" id="radio-toggle" type="button" aria-pressed="false">Play radio</button>
+      <p class="radio-now" id="radio-now" aria-live="polite">Off air</p>
+    </div>
+    <script>
+      import '../scripts/hello';
+      import '../scripts/intro';
+      import '../scripts/audio';
+      import '../scripts/radio';
+      import '../scripts/trails';
+      import '../scripts/stage';
+    </script>
+  </body>
+</html>

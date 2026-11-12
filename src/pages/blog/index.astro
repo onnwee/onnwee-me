@@ -1,0 +1,60 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import { allPosts, iso, minutes } from '../../scripts/posts';
+
+const posts = await allPosts();
+const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+const samples = posts.some((p) => p.data.sample);
+---
+<Base title="Blog · onnwee" description="Notes on software by onnwee: how things were built and what broke.">
+  {/* The section is called "notes" so the window tunnel and the katakana in sprites.ts find it */}
+  <section id="notes" class="blog-page" data-spot="signal" data-ch="03" data-name="blog" aria-labelledby="blog-h">
+    <h1 class="head" id="blog-h"><span class="ch" aria-hidden="true">CH 03</span><span>Blog</span></h1>
+    <Window title={samples ? '~/blog — sample entries' : '~/blog'} term status={[`${posts.length} posts`, 'newest first']}>
+      <a class="back" href="/">Back to CH 01</a>
+      {tags.length > 0 && (
+        <div class="tag-row" id="tag-row" role="group" aria-label="Filter by tag" hidden>
+          <button class="tag on" type="button" data-tag="" aria-pressed="true">all</button>
+          {tags.map((t) => <button class="tag" type="button" data-tag={t} aria-pressed="false">{t}</button>)}
+        </div>
+      )}
+      <ol class="posts">
+        {posts.map((p) => (
+          <li data-tags={p.data.tags.join(' ')}>
+            <time datetime={iso(p.data.date)}>{iso(p.data.date)}</time>
+            <div>
+              <a href={`/blog/${p.id}/`}>{p.data.title}</a>
+              {p.data.summary && <p>{p.data.summary}</p>}
+              <p class="meta">{minutes(p)} min{p.data.tags.map((t) => <span> · {t}</span>)}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="none" id="none" role="status" hidden>Nothing filed under that.</p>
+    </Window>
+  </section>
+</Base>
+
+<script>
+  /* Tag filter. The buttons only appear when this script runs, so without JavaScript the full list shows. */
+  const row = document.getElementById('tag-row');
+  const none = document.getElementById('none');
+  if (row) {
+    row.hidden = false;
+    const items = [...document.querySelectorAll<HTMLElement>('.posts li')];
+    row.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.tag');
+      if (!btn) return;
+      const tag = btn.dataset.tag ?? '';
+      row.querySelectorAll('.tag').forEach((b) => { b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
+      let shown = 0;
+      for (const li of items) {
+        const match = !tag || (li.dataset.tags ?? '').split(' ').includes(tag);
+        li.hidden = !match;
+        if (match) shown++;
+      }
+      if (none) none.hidden = shown > 0;
+    });
+  }
+</script>

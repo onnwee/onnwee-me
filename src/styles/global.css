@@ -1,0 +1,299 @@
+/* Layout: a live 1-bit dithered stage fixed behind everything; content arrives as classic OS windows
+   collaged at uneven offsets. Each section owns one spot color, which the stage switches to with a glitch. */
+:root {
+  --ink: #000000;
+  --paper: #ffffff;
+  --uv: #b026ff;
+  --acid: #b8ff1f;
+  --signal: #27c4ff;
+  --hot: #ff3bd4;
+  --blood: #e0142c;
+  --spot: var(--uv);
+  --local: var(--uv);
+  --display: "Jersey 10", "Silkscreen", ui-monospace, monospace;
+  --body: "VT323", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --ui: "Silkscreen", ui-monospace, Menlo, monospace;
+  --face: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--ink); }
+/* The page color lives on html: a body background would paint over the stage canvas. */
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--paper);
+  font: 22px/1.3 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='30' shape-rendering='crispEdges'%3E%3Cpath d='M1 1v22l6-6 4 10 4-2-4-9h8z' fill='%23fff' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") 1 1, auto;
+}
+::selection { background: var(--spot); color: var(--ink); }
+:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; box-shadow: 0 0 0 6px var(--ink); }
+main:focus { outline: none; }
+/* Skip link: off screen until it has keyboard focus */
+.skip { position: fixed; z-index: 30; left: 16px; top: -80px; background: var(--paper); color: var(--ink); padding: 10px 14px; font: 700 13px/1 var(--ui); border: 2px solid var(--ink); }
+.skip:focus { top: 16px; }
+/* Buttons and links big enough for a finger */
+.btn, .tag, .back { min-height: 24px; }
+a { color: inherit; text-underline-offset: 3px; }
+
+#stage {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: -1; image-rendering: pixelated; background: var(--ink);
+}
+
+main {
+  max-width: 1120px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(160px, 34vh, 360px);
+  padding-block: clamp(72px, 16vh, 180px) 120px;
+}
+section[data-spot="uv"]     { --local: var(--uv); }
+section[data-spot="acid"]   { --local: var(--acid); }
+section[data-spot="signal"] { --local: var(--signal); }
+section[data-spot="hot"]    { --local: var(--hot); }
+section[data-spot="blood"]  { --local: var(--blood); }
+
+/* Hero: the name is drawn into the dithered stage; this text holds its place and stays selectable */
+.hero { display: grid; gap: 28px; justify-items: start; }
+.mark { margin: 0; display: grid; gap: 10px; justify-items: start; font-weight: 400; }
+.mark-glyphs { display: block; font: 700 clamp(40px, 10.5vw, 144px)/1.1 var(--face); white-space: nowrap; color: var(--paper); }
+.mark-glyphs .thin { font-weight: 300; }
+.gl .mark-glyphs { color: transparent; }
+.handle { font: 700 15px/1 var(--ui); letter-spacing: .08em; background: var(--paper); color: var(--ink); padding: 5px 10px 4px; }
+.tape { display: grid; gap: 6px; justify-items: start; margin: 0; }
+.tape span {
+  font-family: var(--display); font-size: clamp(34px, 6vw, 64px); line-height: 1;
+  background: var(--ink); color: var(--paper); padding: 4px 14px 2px;
+}
+.replay { font-size: 11px; padding: 6px 12px; }
+.tape span:nth-child(2) { background: var(--local); color: var(--ink); margin-left: clamp(0px, 6vw, 80px); transform: rotate(-1.2deg); }
+
+/* Windows */
+.slot { position: relative; isolation: isolate; width: min(600px, 100%); }
+.win {
+  position: relative; z-index: 1;
+  background: var(--paper); color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--local);
+}
+.ghost { position: absolute; inset: 0; z-index: 0; pointer-events: none; box-shadow: none; will-change: transform; }
+.titlebar {
+  display: flex; align-items: center; gap: 10px; height: 26px; padding: 0 8px;
+  border-bottom: 2px solid var(--ink);
+  background: repeating-linear-gradient(var(--paper) 0 3px, var(--ink) 3px 4px) center / 100% 16px no-repeat, var(--paper);
+  font: 700 13px/1 var(--ui);
+}
+.titlebar .box { width: 14px; height: 14px; border: 2px solid var(--ink); background: var(--paper); flex: none; }
+.titlebar .name { background: var(--paper); padding: 0 8px; margin: 0 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.win-body { padding: 18px 20px 20px; display: grid; gap: 12px; min-width: 0; }
+.win-body p { margin: 0; max-width: 52ch; }
+.statusbar {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  border-top: 2px solid var(--ink); padding: 4px 10px; font: 400 12px/1.4 var(--ui);
+}
+.win h3 { margin: 0; font: 400 52px/.85 var(--display); }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; }
+.facts div { display: flex; gap: 8px; }
+.facts dt { font: 400 12px/1.9 var(--ui); }
+.facts dd { margin: 0; }
+
+.buttons { display: flex; flex-wrap: wrap; gap: 14px; padding-top: 4px; }
+.btn {
+  font: 700 13px/1 var(--ui); color: var(--ink); background: var(--paper);
+  border: 2px solid var(--ink); border-radius: 7px; padding: 8px 18px; cursor: inherit;
+  text-decoration: none; display: inline-block;
+}
+.btn:active { background: var(--ink); color: var(--paper); }
+.btn.default { box-shadow: 0 0 0 2px var(--paper), 0 0 0 5px var(--ink); }
+
+/* Warning tape: one phrase repeated edge to edge, across the full width */
+.strip {
+  margin: 0 calc(50% - 50vw) 72px; padding: 6px 0 2px;
+  overflow: hidden; white-space: nowrap; transform: rotate(-2.5deg);
+  border-block: 3px solid var(--ink); color: var(--ink);
+  font: 400 clamp(26px, 4vw, 38px)/1 var(--display);
+}
+.strip span { padding-right: 1.1em; }
+.strip { filter: url(#tape-wear); }
+.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.strip.hot { background: var(--hot); }
+.strip.acid { background: var(--acid); transform: rotate(1.8deg); margin-bottom: 40px; }
+
+/* Channel numbers sit in front of each section head */
+.head .ch {
+  display: inline-block; vertical-align: top; margin-right: 12px; padding: 4px 8px 3px;
+  font: 700 14px/1 var(--ui); letter-spacing: .06em; background: var(--ink); color: var(--local);
+}
+
+/* The late show: a tall section that the reel scrubs through, with its caption pinned near the bottom */
+.reel-track { height: 260vh; }
+.reel .reel-card { position: sticky; top: calc(100vh - 230px); width: min(440px, 100%); }
+/* Channel surf: short reels back to back, one clip each, with a small caption card */
+.surf .reel-track { height: 130vh; }
+.surf .reel-card { top: calc(100vh - 170px); width: min(320px, 100%); }
+.surf + .surf, .surf + .reel { margin-top: calc(-1 * clamp(160px, 34vh, 360px)); }
+/* Roll call: room for the skeletons to march past under the card */
+.dead { min-height: 230vh; }
+
+/* The on-screen display: channel number in the corner after every channel change */
+.osd {
+  position: fixed; z-index: 15; display: grid; justify-items: end; gap: 2px; pointer-events: none;
+  top: max(18px, env(safe-area-inset-top, 0px)); right: max(20px, env(safe-area-inset-right, 0px));
+  font: 400 56px/0.9 var(--body); color: var(--acid); text-shadow: 3px 3px 0 var(--ink);
+  opacity: 0; transition: opacity .1s steps(2);
+}
+.osd.on { opacity: 1; }
+.osd-name { font: 400 22px/1 var(--body); color: var(--paper); }
+html.intro .osd, html.intro .dock { display: none; }
+
+/* Sound and radio controls, bottom right */
+.dock {
+  position: fixed; z-index: 15; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  max-width: calc(100vw - 32px);
+}
+.dock .radio-now { order: -1; }
+.dock .btn { font-size: 11px; padding: 6px 10px; }
+.radio-now {
+  margin: 0; padding: 5px 9px 4px; max-width: min(320px, 60vw);
+  font: 400 11px/1.2 var(--ui); background: var(--ink); color: var(--paper);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 404 */
+.nosignal { padding-top: clamp(260px, 56vh, 520px); display: grid; justify-items: center; }
+.ns-card { width: min(520px, 100%); }
+.ns-title { margin: 0; font: 400 40px/.9 var(--display); }
+.ns-card .buttons { padding-top: 6px; }
+
+/* Section heads sit on the stage as tape */
+.head { margin: 0 0 40px; font: 400 clamp(48px, 9vw, 104px)/.85 var(--display); }
+.head span { background: var(--local); color: var(--ink); padding: 2px 14px 0; }
+
+.stack { display: flex; flex-direction: column; gap: clamp(56px, 10vh, 120px); }
+.stack .slot:nth-child(3n + 2) { align-self: flex-end; }
+.stack .slot:nth-child(3n) { align-self: center; }
+.more { margin: 56px 0 0; }
+
+/* Terminal windows */
+.term .win-body { background: var(--ink); color: var(--local); padding: 18px 20px 24px; }
+.term ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.term li { display: grid; grid-template-columns: 11ch 1fr; gap: 14px; }
+.term time { color: var(--paper); font-variant-numeric: tabular-nums; }
+.term a { color: var(--local); }
+.cursor { display: inline-block; width: .6em; background: var(--local); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* A note, read inside a terminal window */
+.note-page .slot { width: min(760px, 100%); }
+.note-page h1 { margin: 0; font: 400 clamp(40px, 6vw, 64px)/.9 var(--display); color: var(--paper); text-wrap: balance; }
+.note-page time { color: var(--paper); }
+.prose { display: grid; gap: 16px; color: var(--paper); }
+.prose > * { margin: 0; max-width: 62ch; }
+.prose pre { max-width: 100%; overflow-x: auto; padding: 12px 14px; border: 2px dashed var(--local); color: var(--local); font: 20px/1.3 var(--body); }
+.prose code { font-family: var(--body); }
+.note-page .meta, .posts .meta { margin: 0; color: var(--paper); opacity: .75; font: 400 12px/1.6 var(--ui); letter-spacing: .04em; }
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; padding-top: 16px; border-top: 2px dashed var(--local); }
+.pager a { color: var(--local); display: grid; gap: 4px; }
+.pager a span { font: 400 12px/1 var(--ui); color: var(--paper); }
+.pager .newer { text-align: right; }
+
+/* The blog: every post, listed in a terminal window */
+.blog-page .slot { width: min(820px, 100%); }
+.term .posts { gap: 22px; }
+.posts li > div { display: grid; gap: 4px; min-width: 0; }
+.posts a { font: 400 clamp(28px, 4vw, 38px)/.95 var(--display); text-wrap: balance; }
+.posts p { margin: 0; color: var(--paper); max-width: 56ch; }
+.term .buttons .btn { color: var(--ink); }
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font: 700 12px/1 var(--ui); letter-spacing: .06em; padding: 5px 9px 4px; cursor: inherit; background: var(--ink); color: var(--local); border: 2px solid var(--local); }
+.tag.on { background: var(--local); color: var(--ink); }
+.term .none { color: var(--paper); margin: 0; }
+.back { font: 700 13px/1 var(--ui); }
+
+.contact { justify-self: center; width: min(460px, 100%); }
+.contact .win-body { grid-template-columns: auto 1fr; align-items: start; gap: 16px 18px; }
+.contact .icon { width: 48px; height: 48px; }
+.contact .buttons { grid-column: 1 / -1; justify-content: flex-end; }
+#cancel { transition: transform .12s steps(3); }
+.footnote { font: 400 12px/1.5 var(--ui); color: var(--paper); background: var(--ink); justify-self: center; padding: 4px 10px; text-align: center; margin: 0; }
+
+/* The author's links: a row of pixel icons */
+.links { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; }
+.links a { display: grid; place-items: center; width: 44px; height: 44px; background: var(--paper); color: var(--ink); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--local); }
+.links a:hover, .links a:active { background: var(--ink); color: var(--local); }
+.contact .links { grid-column: 1 / -1; }
+.colophon > .links { margin-top: 48px; }
+
+/* What the author is doing now, under the name */
+.now { margin: 0; font: 400 20px/1.3 var(--body); background: var(--ink); color: var(--paper); padding: 2px 10px; }
+.now span { font: 700 12px/1 var(--ui); letter-spacing: .08em; color: var(--local); margin-right: 10px; }
+.now time { opacity: .7; margin-left: 6px; }
+
+/* Project and colophon pages */
+.crumb { margin: -16px 0 32px; }
+.crumb .back { background: var(--ink); padding: 4px 8px; }
+.card-title { margin: 0; font: 400 52px/.85 var(--display); }
+.win h3 a, .card-title a { text-decoration-thickness: 3px; }
+.project-page .slot { width: min(720px, 100%); }
+.prose.on-paper { color: var(--ink); }
+.stack.flush .slot { align-self: flex-start !important; width: min(680px, 100%); }
+.stack.flush { gap: 48px; }
+.credits { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+
+/* Intro: the stage plays full screen while the page waits underneath */
+html.intro { overflow: hidden; }
+html.intro main { visibility: hidden; }
+#intro { display: none; }
+html.intro #intro { display: block; position: fixed; inset: 0; z-index: 20; }
+.intro-dialogs { position: absolute; inset: 0; --local: var(--signal); }
+.intro-dialog { position: absolute; width: min(340px, 78vw); }
+.intro-skip {
+  position: absolute; margin: 0; padding: 5px 9px 4px;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  font: 400 12px/1 var(--ui); color: var(--paper); background: var(--ink);
+}
+
+@media (max-width: 560px) {
+  body { font-size: 20px; }
+  .win h3 { font-size: 42px; }
+  .term li { grid-template-columns: 1fr; gap: 0; }
+  .contact .win-body { grid-template-columns: 1fr; }
+}
+/* Holding still: the system asked for reduced motion, or the visitor pressed "Motion off" */
+.still .ghost, .still .replay { display: none; }
+.still .cursor { animation: none; }
+.still #cancel { transition: none; }
+
+/* Tablets and phones */
+@media (max-width: 820px) {
+  .stack .slot { align-self: stretch !important; }
+  .surf .reel-card, .reel .reel-card { top: calc(100vh - 250px); }
+  /* room at the bottom so the corner controls never sit on the last line of the page */
+  main { padding-bottom: 150px; }
+}
+@media (max-width: 560px) {
+  /* one compact row; what the radio is playing is still announced, but not shown */
+  .dock { gap: 4px; flex-wrap: nowrap; bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
+  .dock .btn { font-size: 10px; padding: 6px 7px; white-space: nowrap; }
+  .dock .radio-now { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); padding: 0; }
+  .head { margin-bottom: 28px; }
+  .pager { grid-template-columns: 1fr; }
+  .pager .newer { text-align: left; }
+  .links a { width: 48px; height: 48px; }
+}
+/* A short, wide screen: a phone on its side */
+@media (max-height: 520px) {
+  main { gap: 120px; padding-top: 48px; }
+  .reel .reel-card, .surf .reel-card { top: calc(100vh - 150px); }
+}
+/* Very wide screens: keep the text column from drifting too far left of the picture */
+@media (min-width: 1800px) {
+  main { max-width: 1400px; }
+  body { font-size: 26px; }
+  .slot { width: min(720px, 100%); }
+  .statusbar, .titlebar, .btn, .facts dt { font-size: 15px; }
+}

@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import Window from '../components/Window.astro';
+import Links from '../components/Links.astro';
+---
+<Base title="How this site works · onnwee" description="How the dithered background, the film reels and the intro on onnwee's site are made, and where every picture came from.">
+  <section class="colophon" data-spot="signal" data-ch="10" data-name="colophon" aria-labelledby="col-h">
+    <h1 class="head" id="col-h"><span class="ch" aria-hidden="true">CH 10</span><span>How this works</span></h1>
+    <p class="crumb"><a class="back" href="/">Back to CH 01</a></p>
+    <div class="stack flush">
+      <Window title="picture" article status={['8×8 bayer', '3 colours']}>
+        <h2 class="card-title">The picture</h2>
+        <p>Everything behind the text is drawn in greys onto a small hidden canvas, 720 pixels wide: the rings, the face, the photographs, the film. A WebGL shader then reduces it to black, white and one colour by comparing each cell against an 8×8 Bayer matrix. Light greys become white, mid greys the colour, dark greys black.</p>
+        <p>The colour belongs to the channel you are on. Changing channel flashes static. The glitches are bands of the picture torn sideways, coarsened or inverted for a few frames. Under a mouse, the cells get finer.</p>
+        <p>You can run your own photo or video through it from the first window on the <a href="/">home page</a>. The file never leaves your browser.</p>
+      </Window>
+
+      <Window title="projector" article status={['every frame a keyframe', '12 fps']}>
+        <h2 class="card-title">The film</h2>
+        <p>The film channels don't play. Scrolling through one sets the clip's position, forwards or backwards. Browsers can only jump to a keyframe, so each clip is encoded with every frame as a keyframe, small and short to keep the files light. <a href="/blog/keyframes/">There is a post about that.</a></p>
+      </Window>
+
+      <Window title="set" article status={['off by default', 'no audio files']}>
+        <h2 class="card-title">Sound and intro</h2>
+        <p>The sound is off until you turn it on, and it is made in the browser: a tube's hum, static that rises with the glitches, a burst when the channel changes. The radio is a stream from SomaFM. Nothing is requested from them until you press play.</p>
+        <p>The intro runs once per visit, for about ten seconds. Any key, click or scroll skips it. If your system asks for reduced motion, it never runs, and the background holds still. The <b>Motion</b> button in the corner does the same thing by hand.</p>
+      </Window>
+
+      <Window title="privacy" article status={['0 cookies', '0 trackers']}>
+        <h2 class="card-title">What it keeps</h2>
+        <p>No cookies and no analytics. The fonts are served from this site. Your browser remembers three things for it: that you have seen the intro this visit, whether you left the sound on, and whether you turned the motion off.</p>
+      </Window>
+
+      <Window title="credits" article status={['public domain', 'mostly']}>
+        <h2 class="card-title">Where the pictures came from</h2>
+        <ul class="credits">
+          <li>The face, the hooded skull, the headstones, the cameras and the window tunnel are drawn in code.</li>
+          <li><a href="https://www.metmuseum.org/art/collection/search/207770">Carved skull</a>, 17th century. The Met. Public domain.</li>
+          <li><a href="https://commons.wikimedia.org/wiki/File:Center_face_detail,_111-SC-4051_-_American_soldiers_equipped_with_latest_type_gas_mask._-_NARA_-_55169506_(cropped)_(cropped)_(cropped).jpg">Soldier in a gas mask</a>, 1918. US National Archives. Public domain, edited.</li>
+          <li><a href="https://commons.wikimedia.org/wiki/File:Bertillon,_Alphonse,_fiche_anthropom%C3%A9trique_recto-verso_-_crop.jpg">Bertillon's identification card</a>, 1912, and <a href="https://commons.wikimedia.org/wiki/File:Bertillon_-_Signalement_Anthropometrique.png">his measuring chart</a>. CC0 and public domain.</li>
+          <li><a href="https://commons.wikimedia.org/wiki/File:Panopticon.jpg">Bentham's Panopticon</a>, drawn by Willey Reveley, 1791. Public domain.</li>
+          <li>José Guadalupe Posada, <a href="https://commons.wikimedia.org/wiki/File:La_Calavera_Catrina_J_Guadalupe_Posada.jpg"><i>La Calavera Catrina</i></a> and <a href="https://commons.wikimedia.org/wiki/File:Gran_calavera_el%C3%A9ctrica2.jpg"><i>Gran calavera eléctrica</i></a>. Public domain.</li>
+          <li><a href="https://commons.wikimedia.org/wiki/File:Vesalius_164frc.png">Skeleton contemplating a skull</a>, from Vesalius, 1543. Public domain.</li>
+          <li><a href="https://archive.org/details/night-of-the-living-dead_202309"><i>Night of the Living Dead</i></a>, George A. Romero, 1968. Public domain.</li>
+          <li><a href="https://unsplash.com/photos/OI_Nu0TQPAw">Portrait</a> by Björn Pierre on Unsplash, edited. Unsplash License.</li>
+          <li>The six channel-surf clips are stock footage.</li>
+        </ul>
+        <p>Type: Jersey 10, Silkscreen, VT323, Creepster and IM Fell English SC. Built with Astro.</p>
+      </Window>
+    </div>
+    <Links />
+  </section>
+</Base>
