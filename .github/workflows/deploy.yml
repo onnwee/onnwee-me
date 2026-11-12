@@ -77,7 +77,9 @@ jobs:
           for attempt in $(seq 1 40); do
             live=$(curl -fsS --max-time 10 "https://onnwee.me/REVISION?run=$GITHUB_RUN_ID-$attempt" || true)
             if [ "$live" = "$GITHUB_SHA" ]; then
-              curl -fsS --max-time 10 https://onnwee.me/ | grep -q '<title>onnwee</title>'
+              # read the page whole: grep -q would stop reading early and fail curl under pipefail
+              home=$(curl -fsS --max-time 10 https://onnwee.me/)
+              grep -q '<title>onnwee</title>' <<< "$home"
               echo "onnwee.me serves $GITHUB_SHA"; exit 0
             fi
             echo "onnwee.me serves ${live:-nothing yet}; waiting ($attempt/40)"; sleep 15
