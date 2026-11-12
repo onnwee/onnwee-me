@@ -14,6 +14,8 @@ const projects = defineCollection({
     /** Where the source lives, and a running copy if there is one. */
     repo: z.url().optional(),
     url: z.url().optional(),
+    /** Sites or tools built on this one, listed on its page. */
+    downstream: z.array(z.object({ name: z.string(), summary: z.string(), url: z.url().optional(), repo: z.url().optional() })).default([]),
     sample: z.boolean().default(false),
   }),
 });

@@ -24,6 +24,22 @@ const { Content } = await render(project);
         <div><dt>state</dt><dd>{data.state}</dd></div>
       </dl>
       <div class="prose on-paper"><Content /></div>
+      {data.downstream.length > 0 && (
+        <div class="downstream">
+          <h2>Built on it</h2>
+          <ul>
+            {data.downstream.map((d) => (
+              <li>
+                <div>
+                  <h3>{d.url ? <a href={d.url} rel="noopener">{d.name}</a> : d.name}</h3>
+                  <p>{d.summary}</p>
+                </div>
+                {d.repo && <a class="mini" href={d.repo} aria-label={`Source code for ${d.name}`} title="Source code" rel="noopener"><Icon name="code" /></a>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {(data.repo || data.url) && (
         <ul class="links">
           {data.repo && <li><a href={data.repo} aria-label="Source code" title="Source code" rel="noopener"><Icon name="code" /></a></li>}

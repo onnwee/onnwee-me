@@ -240,6 +240,15 @@ html.intro .osd, html.intro .dock { display: none; }
 .win h3 a, .card-title a { text-decoration-thickness: 3px; }
 .project-page .slot { width: min(720px, 100%); }
 .prose.on-paper { color: var(--ink); }
+/* What is built on a project: a short list inside its window */
+.downstream { border-top: 2px solid var(--ink); padding-top: 14px; display: grid; gap: 10px; }
+.downstream h2 { margin: 0; font: 700 13px/1 var(--ui); letter-spacing: .06em; }
+.downstream ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.downstream li { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+.downstream h3 { margin: 0; font: 400 30px/.95 var(--display); }
+.downstream p { margin: 2px 0 0; }
+.downstream .mini { display: grid; place-items: center; width: 44px; height: 44px; border: 2px solid var(--ink); color: var(--ink); }
+.downstream .mini:hover { background: var(--ink); color: var(--local); }
 .stack.flush .slot { align-self: flex-start !important; width: min(680px, 100%); }
 .stack.flush { gap: 48px; }
 .credits { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }

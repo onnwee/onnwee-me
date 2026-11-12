@@ -4,7 +4,7 @@ summary: "Strips the device, time and location tags a phone writes into a photo,
 stack: not chosen yet
 state: planned
 status: "not built yet"
-order: 13
+order: 14
 repo: https://github.com/subculture-collective/noface
 ---
 
