@@ -3,6 +3,7 @@ import { updateTrails } from './trails';
 import { introFinished, introTime } from './intro';
 import { drawIntro, filmDamage, staticNoise } from './intro-scene';
 import { drawSprites } from './sprites';
+import { updateDepth } from './depth';
 import { drawDeadFace, drawFace, drawHoodedSkull, drawSkullPhoto } from './face';
 import { soundChannel, soundFrame } from './audio';
 import { musicLevel } from './radio';
@@ -452,8 +453,8 @@ function start(gl: WebGL2RenderingContext, stage: HTMLCanvasElement) {
     }
     soundFrame(glitch);
     present(cell, glitch, roll, currentSpot, t, mouse.amt);
-    /* last, so moving the window trails never forces the measurements above to be redone */
-    if (!reduce) updateTrails();
+    /* last, so moving the windows and their trails never forces the measurements above to be redone */
+    if (!reduce) { updateDepth(); updateTrails(); }
   }
 
   function present(cell: number, glitchAmount: number, rollAmount: number, spotName: string, t: number, lens: number) {

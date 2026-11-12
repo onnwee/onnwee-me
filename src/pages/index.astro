@@ -16,12 +16,12 @@ const notes = posts.slice(0, 4);
 
 /* Channel surf: each clip is its own channel, scrubbed by scrolling through it */
 const channels = [
-  { clip: 'flare', ch: '13', spot: 'blood', line: 'Somebody lights a flare.' },
-  { clip: 'crowd', ch: '27', spot: 'acid', line: 'A crowd. Nobody in particular.' },
-  { clip: 'patrol-lights', ch: '31', spot: 'hot', line: 'Blue lights, downtown.' },
-  { clip: 'fire', ch: '44', spot: 'blood', line: 'Fire.' },
-  { clip: 'radar', ch: '58', spot: 'acid', line: 'Sweep. Nothing. Sweep.' },
-  { clip: 'tv-wall', ch: '66', spot: 'signal', line: 'Nine screens of the same sea.' },
+  { clip: 'flare', ch: '13', spot: 'blood' },
+  { clip: 'crowd', ch: '27', spot: 'acid' },
+  { clip: 'patrol-lights', ch: '31', spot: 'hot' },
+  { clip: 'fire', ch: '44', spot: 'blood' },
+  { clip: 'radar', ch: '58', spot: 'acid' },
+  { clip: 'tv-wall', ch: '66', spot: 'signal' },
 ];
 ---
 <Base title="onnwee" description={DESCRIPTION}>
@@ -131,12 +131,8 @@ const channels = [
   </section>
 
   {channels.map((c) => (
-    <section class="reel surf" data-spot={c.spot} data-ch={c.ch} data-name={c.clip.replace('-', ' ')} data-scrub={`/media/${c.clip}.mp4`} data-no-trail aria-label={`Channel ${c.ch}`}>
-      <div class="reel-track">
-        <Window title={`CH ${c.ch}`} slotClass="reel-card">
-          <p>{c.line}</p>
-        </Window>
-      </div>
+    <section class="reel surf" data-spot={c.spot} data-ch={c.ch} data-name={c.clip.replace('-', ' ')} data-scrub={`/media/${c.clip}.mp4`} data-no-trail aria-hidden="true">
+      <div class="reel-track"></div>
     </section>
   ))}
 
@@ -153,7 +149,7 @@ const channels = [
     <h2 class="head" id="dead-h"><span class="ch" aria-hidden="true">CH 08</span><span>Roll call</span></h2>
     <Window title="attendance" article status={['everyone present', 'about 1910']}>
       <h3>All here.</h3>
-      <p>José Guadalupe Posada drew Mexico City as skeletons: the rich in their hats, the poor, the passengers on the tram. Same bones under every hat.</p>
+      <p>José Guadalupe Posada drew Mexico City as skeletons, the rich in their hats and the poor alike. Same bones under every hat.</p>
       <p>The one leaning on the tomb is from Vesalius, 1543. He has been thinking it over for a while.</p>
     </Window>
   </section>

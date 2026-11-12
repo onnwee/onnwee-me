@@ -22,11 +22,14 @@ type Placement = {
   speed?: number;
   /** Size as a fraction of the screen's shorter side. */
   size: number;
+  /** The picture the section is about. It is kept clear of the section's windows (see `clearings`). */
+  focus?: boolean;
+  /** Moves with the section's focus picture, so the two stay together. */
+  follow?: boolean;
 };
 /** `plate` puts black behind a line drawing, so the rings don't show through and muddy it. */
 type ImageSprite = Placement & { kind: 'image'; src: string; x: number; rotate?: number; spin?: number; alpha?: number; plate?: boolean };
 type RowSprite = Placement & { kind: 'row'; src: string; count: number; rotate?: number };
-type MarqueeSprite = Placement & { kind: 'marquee'; src: string; drift: number; plate?: boolean };
 type TextSprite = Placement & { kind: 'text'; text: string; alpha: number; drift?: number };
 type CrowdSprite = Placement & { kind: 'crowd'; rows: number };
 type CameraSprite = Placement & { kind: 'cameras'; count: number };
@@ -48,7 +51,7 @@ type RainSprite = Placement & { kind: 'rain'; stamps: Stamp[]; count: number; sp
 
 /* A stable pseudo-random number per face, so the same faces die in the same order every time */
 const hash = (a: number, b: number) => { const n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return n - Math.floor(n); };
-type Sprite = ImageSprite | RowSprite | MarqueeSprite | TextSprite | CrowdSprite | CameraSprite | TilesSprite | TunnelSprite
+type Sprite = ImageSprite | RowSprite | TextSprite | CrowdSprite | CameraSprite | TilesSprite | TunnelSprite
   | StrokesSprite | BloomSprite | ArchSprite | SwarmSprite | RainSprite;
 
 /* Smooth noise between 0 and 1: hashed corners of a grid, blended. Nearby points get nearby values,
@@ -73,36 +76,34 @@ const SPRITES: Sprite[] = [
   /* A frozen desktop: windows falling away down a tunnel */
   /* pointers dragged across it, the way a frozen desktop smears the cursor */
   { kind: 'strokes', stamp: 'hand', in: 'notes', offset: 0.1, size: 0.085, count: 4, length: 22, spread: 0.9, gap: 0.95 },
-  { kind: 'tunnel', in: 'notes', x: 0.76, size: 0.8, count: 26, speed: 0.9 },
-  { kind: 'text', text: 'アンニュイ', in: 'notes', offset: 0.42, size: 0.45, alpha: 0.25, drift: 24 },
+  { kind: 'tunnel', in: 'notes', x: 0.76, size: 0.8, count: 26, speed: 0.9, focus: true },
+  { kind: 'text', text: 'アンニュイ', in: 'notes', offset: 0.42, size: 0.45, alpha: 0.25, drift: 24, speed: 0.55 },
   /* Identification: Bertillon's measuring chart and his own police card, 1912 (public domain / CC0) */
   /* Everyone on file: a sunflower of faces behind the card, and a sweep that crosses them off */
-  { kind: 'bloom', in: 'file', x: 0.3, offset: 0.3, size: 0.5, count: 170 },
-  { kind: 'image', src: '/sprites/bertillon-chart.webp', in: 'file', x: 0.86, offset: -0.2, size: 0.5, rotate: 5, alpha: 0.8 },
-  { kind: 'image', src: '/sprites/bertillon-card.webp', in: 'file', x: 0.66, offset: 0.12, size: 0.8, rotate: -4, speed: 1.1 },
+  { kind: 'bloom', in: 'file', x: 0.3, offset: 0.3, size: 0.5, count: 170, speed: 0.8, follow: true },
+  { kind: 'image', src: '/sprites/bertillon-chart.webp', in: 'file', x: 0.86, offset: -0.2, size: 0.5, rotate: 5, alpha: 0.8, follow: true },
+  { kind: 'image', src: '/sprites/bertillon-card.webp', in: 'file', x: 0.66, offset: 0.12, size: 0.8, rotate: -4, speed: 1.1, focus: true },
   /* Surveillance: Bentham's Panopticon turning slowly, and wall-mounted cameras that follow the pointer */
   /* a wall of eyes behind it, opening and closing in ripples */
-  { kind: 'tiles', stamp: 'eye', in: 'tower', offset: -0.05, size: 0.17, rows: 3, alpha: 0.45 },
-  { kind: 'image', src: '/sprites/panopticon.webp', in: 'tower', x: 0.72, size: 0.95, spin: 4, speed: 0.9 },
-  { kind: 'cameras', in: 'tower', size: 0.22, count: 4 },
+  { kind: 'tiles', stamp: 'eye', in: 'tower', offset: -0.05, size: 0.17, rows: 3, alpha: 0.45, speed: 0.7 },
+  { kind: 'image', src: '/sprites/panopticon.webp', in: 'tower', x: 0.72, size: 0.95, spin: 4, speed: 0.9, focus: true },
+  { kind: 'cameras', in: 'tower', size: 0.22, count: 4, follow: true },
   /* Facelessness: one gas-masked soldier, 1918, cut out and repeated (US National Archives 111-SC-4051, public domain, edited) */
   /* a wall of televisions, and things falling out of the sky in front of them */
-  { kind: 'tiles', stamp: 'tv', in: 'surf', offset: 0.42, size: 0.17, rows: 3, alpha: 0.55 },
+  { kind: 'tiles', stamp: 'tv', in: 'surf', offset: 0.42, size: 0.17, rows: 3, alpha: 0.55, speed: 0.7 },
   { kind: 'rain', stamps: ['bomb', 'bomb', 'bolt', 'bomb', 'cloud'], in: 'surf', offset: -0.1, size: 0.17, count: 8, spread: 1.1 },
-  { kind: 'arch', src: '/sprites/gas-mask.webp', in: 'surf', size: 0.38, count: 7, speed: 1.2 },
+  { kind: 'arch', src: '/sprites/gas-mask.webp', in: 'surf', size: 0.38, count: 7, speed: 1.2, focus: true },
   /* The dead: a wallpaper of hooded skulls that swells and shrinks in ripples, brush strokes of dead faces
-     dragged across the page, Posada's skull heap sliding past, Vesalius's skeleton and the Catrina
-     (all public domain) */
-  { kind: 'tiles', in: 'dead', offset: -0.8, size: 0.1, rows: 5, alpha: 0.4 },
-  { kind: 'marquee', src: '/sprites/calavera-electrica.webp', in: 'dead', offset: -0.42, size: 0.42, drift: 26, plate: true },
+     dragged across the page, Vesalius's skeleton and Posada's Catrina (both public domain) */
+  { kind: 'tiles', in: 'dead', offset: -0.8, size: 0.1, rows: 5, alpha: 0.4, speed: 0.7 },
   { kind: 'image', src: '/sprites/vesalius.webp', in: 'dead', x: 0.26, offset: 0.34, size: 0.56, rotate: 2, plate: true },
-  /* drawn below the skull heap, across the skeleton and under the Catrina */
+  /* drawn across the skeleton and under the Catrina */
   { kind: 'strokes', stamp: 'dead', in: 'dead', offset: 0.05, size: 0.1, count: 3, length: 60, spread: 0.55 },
   { kind: 'image', src: '/sprites/catrina.webp', in: 'dead', x: 0.66, offset: 0.64, size: 1.05, rotate: -2, plate: true },
   /* Everyone else, sprayed in a spiral around the one who was caught */
-  { kind: 'swarm', in: 'contact', x: 0.7, offset: -0.05, size: 0.9, count: 56, speed: 0.85, stamps: ['dead', 'phone', 'heart', 'dead', 'face', 'phone'] },
+  { kind: 'swarm', in: 'contact', x: 0.7, offset: -0.05, size: 0.9, count: 56, speed: 0.85, stamps: ['dead', 'phone', 'heart', 'dead', 'face', 'phone'], follow: true },
   /* Juxtaposition: a playful portrait, caught by face recognition (photo by Björn Pierre, Unsplash, edited) */
-  { kind: 'image', src: '/sprites/capture.webp', in: 'contact', x: 0.7, offset: -0.05, size: 0.78, rotate: -3, speed: 0.85 },
+  { kind: 'image', src: '/sprites/capture.webp', in: 'contact', x: 0.7, offset: -0.05, size: 0.78, rotate: -3, speed: 0.85, focus: true },
 ];
 
 const images = new Map<string, HTMLImageElement>();
@@ -115,6 +116,123 @@ const ready = (src: string) => { const im = images.get(src); return im?.complete
 
 const homes = new Map<string, HTMLElement | null>();
 const home = (id: string) => { if (!homes.has(id)) homes.set(id, document.getElementById(id)); return homes.get(id) ?? null; };
+
+/* Clearings: a section's window would otherwise sit right on its picture, because both cross the middle
+   of the screen at the same moment. So each focus picture is moved until no more than CLEAR of its
+   middle (CORE of its width and height, where the subject is; an edge can go under) is under the
+   section's head or windows, at the moment the section's middle is on the middle of the screen.
+   First it slides sideways, up to a quarter of it off the edge. Where that isn't enough (a phone, where
+   the windows fill the width, or a picture as wide as the screen) it moves into the gap below the
+   section instead, or above it when a film reel comes next, and the gap grows until the pictures in it
+   fit, one above the other.
+   Then the picture has the screen to itself between one window and the next. */
+const CLEAR = 0.08, CORE = 0.7, PAD = 24;
+/* dx: sideways, in screen widths. rel: how far the picture's anchor moved down the page, in pixels; each
+   sprite in the section turns that into its own offset at its own speed, so followers stay with it.
+   base: the focus picture's own offset, which the move replaces. */
+const shifts = new Map<string, { dx: number; rel: number; base: number }>();
+let laidOut = '', stale = true;
+new ResizeObserver(() => { stale = true; }).observe(document.body);
+
+type Box = { x: number; y: number; w: number; h: number };
+/* Where an element sits on the page, ignoring transforms, so the parallax in depth.ts never feeds back */
+function docBox(el: HTMLElement): Box {
+  let x = 0, y = 0;
+  for (let e: HTMLElement | null = el; e; e = e.offsetParent as HTMLElement | null) { x += e.offsetLeft; y += e.offsetTop; }
+  return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+}
+/* How big a focus picture is drawn, and how far its middle sits from its anchor point */
+function extent(s: Sprite, m: number, vw: number, vh: number): { w: number; h: number; dy: number } | null {
+  const size = s.size * m;
+  if (s.kind === 'image') {
+    const im = ready(s.src);
+    if (!im) return null;
+    const h = (size * im.naturalHeight) / im.naturalWidth;
+    /* a spinning picture sweeps a square */
+    return s.spin ? { w: Math.max(size, h), h: Math.max(size, h), dy: 0 } : { w: size, h, dy: 0 };
+  }
+  if (s.kind === 'arch') {
+    const im = ready(s.src);
+    if (!im) return null;
+    return { w: vw * 0.94 + size * 0.3, h: (size * im.naturalHeight) / im.naturalWidth + vh * 0.16, dy: vh * 0.02 };
+  }
+  if (s.kind === 'tunnel') return { w: size * 1.25, h: size * 0.85, dy: 0 };
+  return null;
+}
+const overlap = (a: Box, b: Box) =>
+  Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+
+const widened = new Set<HTMLElement>();
+function clearings(vw: number, vh: number) {
+  const m = Math.min(vw, vh);
+  const focus = SPRITES.filter((s) => s.focus && home(s.in));
+  /* undo last time's gaps before measuring, so the answer is the same however often this runs */
+  for (const el of widened) el.style.marginBottom = '';
+  widened.clear();
+  shifts.clear();
+  /* pictures that need a gap, by the section above that gap */
+  type Claim = { s: Sprite; sec: HTMLElement; h: number; dy: number; x: number; below: boolean };
+  const gaps = new Map<HTMLElement, { lower: HTMLElement; claims: Claim[] }>();
+  for (const s of focus) {
+    const sec = home(s.in)!, e = extent(s, m, vw, vh);
+    if (!e) continue; // not loaded yet: laid out again once it is
+    const S = docBox(sec), mid = S.y + S.h / 2;
+    /* the head's tape, not the head: the heading box runs the full width but the tape doesn't.
+       Trail ghosts are left out: they sit exactly on their window. */
+    const covers = [...sec.querySelectorAll<HTMLElement>(':scope > .head > span, .slot > .win:not(.ghost)')]
+      .map(docBox).map((b) => ({ ...b, y: b.y - mid + vh / 2 }));
+    const x0 = 'x' in s ? s.x : 0.5;
+    const cy = vh / 2 + (s.offset ?? 0) * vh + e.dy;
+    const covered = (cx: number) => {
+      const w = e.w * CORE, h = e.h * CORE, box = { x: cx - w / 2, y: cy - h / 2, w, h };
+      return covers.reduce((sum, c) => sum + overlap(box, c), 0) / (w * h);
+    };
+    let dx: number | null = null;
+    if (covered(x0 * vw) <= CLEAR) dx = 0;
+    else if ('x' in s) { // a picture drawn across the width (the arch) can't move sideways
+      for (let d = 0.01; d <= 1 && dx === null; d += 0.01) {
+        for (const sign of [1, -1]) {
+          const cx = (x0 + sign * d) * vw;
+          if (cx - e.w / 2 < -e.w * 0.25 || cx + e.w / 2 > vw + e.w * 0.25) continue;
+          if (covered(cx) <= CLEAR) { dx = sign * d; break; }
+        }
+      }
+    }
+    if (dx !== null) { shifts.set(s.in, { dx, rel: 0, base: 0 }); continue; }
+
+    /* no room beside the window: use the gap next to the section */
+    const next = sec.nextElementSibling as HTMLElement | null, prev = sec.previousElementSibling as HTMLElement | null;
+    const below = !!next && !next.matches('.reel');
+    const upper = below ? sec : prev, lower = below ? next : sec;
+    if (!upper || !lower) continue;
+    const cx = e.w >= vw ? vw / 2 : Math.min(vw - e.w / 2, Math.max(e.w / 2, x0 * vw));
+    const gap = gaps.get(upper) ?? { lower, claims: [] };
+    gap.claims.push({ s, sec, h: e.h, dy: e.dy, x: cx / vw - x0, below });
+    gaps.set(upper, gap);
+  }
+  /* Grow each gap until its pictures fit, one above the other with PAD round each. A gap's room doesn't
+     depend on the others, so grow them all first, then measure where everything has ended up. */
+  const sizes = new Map<HTMLElement, number>();
+  for (const [upper, { lower, claims }] of gaps) {
+    const U = docBox(upper), room = docBox(lower).y - (U.y + U.h);
+    const need = claims.reduce((sum, c) => sum + c.h, 0) + PAD * (claims.length + 1);
+    const extra = Math.max(0, Math.ceil(need - room));
+    if (extra) { upper.style.marginBottom = `${extra}px`; widened.add(upper); }
+    sizes.set(upper, room + extra);
+  }
+  /* Give each picture its own stretch of the gap. It reaches the middle of the screen when its stretch does. */
+  for (const [upper, { claims }] of gaps) {
+    claims.sort((a, b) => Number(b.below) - Number(a.below)); // the upper section's picture first
+    const U = docBox(upper), size = sizes.get(upper)!;
+    const spacing = (size - claims.reduce((sum, c) => sum + c.h, 0)) / (claims.length + 1);
+    let y = U.y + U.h + spacing;
+    for (const c of claims) {
+      const S = docBox(c.sec);
+      shifts.set(c.s.in, { dx: c.x, rel: y + c.h / 2 - (S.y + S.h / 2), base: (c.s.offset ?? 0) + c.dy / vh });
+      y += c.h + spacing;
+    }
+  }
+}
 
 /* Cameras follow the pointer, easing so they turn like motors */
 let px = innerWidth / 2, py = innerHeight * 0.8, aimX = px, aimY = py;
@@ -193,8 +311,14 @@ function drawWindow(sx: CanvasRenderingContext2D, w: number, h: number, shade: n
 export function drawSprites(sx: CanvasRenderingContext2D, v: View) {
   const m = Math.min(v.vw, v.vh), k = v.k;
   aimX += (px - aimX) * 0.08; aimY += (py - aimY) * 0.08;
+  const key = `${v.vw}x${v.vh}:${SPRITES.filter((s) => s.focus && 'src' in s && ready(s.src)).length}`;
+  if (stale || key !== laidOut) { clearings(v.vw, v.vh); laidOut = key; stale = false; }
 
-  for (const s of SPRITES) {
+  for (const s0 of SPRITES) {
+    const shift = s0.focus || s0.follow ? shifts.get(s0.in) : undefined;
+    const s: Sprite = shift
+      ? { ...s0, offset: (s0.offset ?? 0) + (shift.rel * (s0.speed ?? 1)) / v.vh - shift.base, ...('x' in s0 ? { x: s0.x + shift.dx } : {}) }
+      : s0;
     const el = home(s.in);
     if (!el) continue;
     const box = el.getBoundingClientRect();
@@ -240,12 +364,6 @@ export function drawSprites(sx: CanvasRenderingContext2D, v: View) {
         sx.drawImage(im, -w / 2, -h / 2, w, h);
         sx.restore();
       }
-    } else if (s.kind === 'marquee') {
-      const im = ready(s.src);
-      if (!im) continue;
-      const h = size * k, w = (h * im.naturalWidth) / im.naturalHeight;
-      if (s.plate) { sx.fillStyle = '#000'; sx.fillRect(0, cy * k - h / 2, v.vw * k, h); }
-      for (let x = -((v.t * s.drift * k) % w); x < v.vw * k; x += w) sx.drawImage(im, x, cy * k - h / 2, w, h);
     } else if (s.kind === 'tiles') {
       /* a wallpaper of hooded skulls, every other row shifted half a step. Two ripples spread from two
          points and interfere: where they agree the skulls swell, where they cancel they shrink away. */

@@ -11,7 +11,6 @@ Images were cropped, converted to grayscale and contrast-adjusted for the dither
 | `bertillon-chart.webp` | *Signalement anthropométrique*, Bertillon's chart of body measurements. Public domain | https://commons.wikimedia.org/wiki/File:Bertillon_-_Signalement_Anthropometrique.png |
 | `panopticon.webp` | Jeremy Bentham's Panopticon prison, plan and section, drawn by Willey Reveley in 1791, published 1843. Public domain | https://commons.wikimedia.org/wiki/File:Panopticon.jpg |
 | `catrina.webp` | José Guadalupe Posada, *La Calavera Catrina*, 1913. Public domain | https://commons.wikimedia.org/wiki/File:La_Calavera_Catrina_J_Guadalupe_Posada.jpg |
-| `calavera-electrica.webp` | José Guadalupe Posada, *Gran calavera eléctrica*, between 1900 and 1913. Public domain | https://commons.wikimedia.org/wiki/File:Gran_calavera_el%C3%A9ctrica2.jpg |
 | `vesalius.webp` | Skeleton contemplating a skull, from Vesalius, *De humani corporis fabrica*, 1543. Public domain | https://commons.wikimedia.org/wiki/File:Vesalius_164frc.png |
 | `../media/cemetery.mp4` | *Night of the Living Dead* (George A. Romero, 1968), five shots of Barbra at the headstone in the cemetery scene (between 6:45 and 7:17 in this copy), joined into 9 seconds, greyscale and brightened so her face reads through the dither. Public domain | Internet Archive, https://archive.org/details/night-of-the-living-dead_202309 |
 | `../og.png` | Link preview: a capture of this site's hero | Made for this site |

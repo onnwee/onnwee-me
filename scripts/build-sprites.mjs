@@ -102,7 +102,7 @@ async function capture() {
 const FOUND = [
   /* [name, width, line art, contrast: above 1 thins dense hatching so it doesn't dither to solid white] */
   ['bertillon-card', 720, false], ['bertillon-chart', 520, true], ['panopticon', 760, true],
-  ['catrina', 760, true, 1.3], ['calavera-electrica', 1000, true, 2.2], ['vesalius', 420, true],
+  ['catrina', 760, true, 1.3], ['vesalius', 420, true],
 ];
 async function found([name, width, lines, contrast = 1]) {
   const file = path.join(out, `${name}.webp`);
