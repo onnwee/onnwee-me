@@ -9,6 +9,6 @@ repo: https://github.com/subculture-collective/deadweb-relay
 url: https://www2.onnwee.me/
 ---
 
-It looks like 1998 and behaves like a careful web service: stable addresses, feeds, discovery files and notes you can write with a plain HTTP `PUT`.
+It has stable addresses, feeds, discovery files and notes you can write with an HTTP `PUT`.
 
 It is also a small experiment in being easy to find. It hides no instructions in its pages and never fetches an address a visitor submits.

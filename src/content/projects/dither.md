@@ -1,8 +1,8 @@
 ---
 name: dither
-summary: "The renderer behind this page. A WebGL shader that turns any video into ordered-dither signal with one spot color."
+summary: "The renderer behind this site. A WebGL shader for images and video, using ordered dithering and one accent colour."
 stack: WebGL2
-state: you are looking at it
+state: part of this site
 status: "8×8 bayer"
 order: 1
 repo: https://github.com/subculture-collective/dither

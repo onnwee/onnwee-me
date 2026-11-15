@@ -91,10 +91,10 @@ function intertitle(sx: CanvasRenderingContext2D, W: number, H: number) {
     sx.beginPath(); sx.moveTo(x, y - m * 0.03); sx.lineTo(x + m * 0.03, y); sx.lineTo(x, y + m * 0.03); sx.lineTo(x - m * 0.03, y); sx.fill();
   }
   sx.textAlign = 'center'; sx.textBaseline = 'middle';
-  const size = fitFont(sx, 'A TRANSMISSION', m * 0.12, SERIF, W * 0.78);
-  sx.fillText('A TRANSMISSION', W / 2, H / 2 - size * 0.62);
+  const size = fitFont(sx, 'AND EXPERIMENTS', m * 0.12, SERIF, W * 0.78);
+  sx.fillText('SOFTWARE', W / 2, H / 2 - size * 0.62);
   sx.font = `400 ${size}px ${SERIF}`;
-  sx.fillText('FROM NO ONE', W / 2, H / 2 + size * 0.62);
+  sx.fillText('AND EXPERIMENTS', W / 2, H / 2 + size * 0.62);
 }
 
 function gasGrid(sx: CanvasRenderingContext2D, W: number, H: number, p: number) {
@@ -145,8 +145,8 @@ function titleCard(sx: CanvasRenderingContext2D, W: number, H: number, local: nu
   for (let r = m * 0.2; r < Math.max(W, H); r += m * 0.11) { sx.beginPath(); sx.arc(cx, cy, r, 0, Math.PI * 2); sx.stroke(); }
   sx.textAlign = 'center'; sx.textBaseline = 'middle';
   sx.fillStyle = '#fff';
-  fitFont(sx, 'a transmission by', m * 0.075, SERIF, W * 0.8);
-  sx.fillText('a transmission by', cx, cy - m * 0.31);
+  fitFont(sx, 'onnwee.me', m * 0.075, SERIF, W * 0.8);
+  sx.fillText('onnwee.me', cx, cy - m * 0.31);
   /* the name slams in */
   const slam = 1 + Math.max(0, 1 - local / 0.18) * 0.6;
   const fs = fitFont(sx, '⓪ηηωεε倦怠', m * 0.15 * slam, faceFont, W * 0.9 * slam, '700');

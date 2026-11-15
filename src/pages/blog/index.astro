@@ -12,7 +12,7 @@ const samples = posts.some((p) => p.data.sample);
   <section id="notes" class="blog-page" data-spot="signal" data-ch="03" data-name="blog" aria-labelledby="blog-h">
     <h1 class="head" id="blog-h"><span class="ch" aria-hidden="true">CH 03</span><span>Blog</span></h1>
     <Window title={samples ? '~/blog — sample entries' : '~/blog'} term status={[`${posts.length} posts`, 'newest first']}>
-      <a class="back" href="/">Back to CH 01</a>
+      <a class="back" href="/">Home</a>
       {tags.length > 0 && (
         <div class="tag-row" id="tag-row" role="group" aria-label="Filter by tag" hidden>
           <button class="tag on" type="button" data-tag="" aria-pressed="true">all</button>
@@ -31,7 +31,7 @@ const samples = posts.some((p) => p.data.sample);
           </li>
         ))}
       </ol>
-      <p class="none" id="none" role="status" hidden>Nothing filed under that.</p>
+      <p class="none" id="none" role="status" hidden>No posts with this tag.</p>
     </Window>
   </section>
 </Base>

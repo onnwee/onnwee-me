@@ -14,6 +14,6 @@ export const LINKS: { label: string; href: string; icon: LinkIcon }[] = [
 ];
 
 /* One sentence on what is being worked on, and the day it was written. Shown on the home page. */
-export const NOW = { text: 'Adding channels to this site.', date: '2026-11-11' };
+export const NOW = { text: 'Working on this site.', date: '2026-11-14' };
 
-export const DESCRIPTION = 'Software by onnwee: projects and notes from an account with no person attached.';
+export const DESCRIPTION = 'Software, tools and experiments by onnwee, with notes on how they are built.';

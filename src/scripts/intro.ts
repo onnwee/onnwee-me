@@ -33,7 +33,7 @@ function finish() {
   dispatchEvent(new Event('boot:done'));
 }
 
-const WARNINGS = ['Signal lost.', 'Somebody is watching.', 'Consent assumed.', 'Your face has been saved.', 'Do not adjust your set.'];
+const WARNINGS = ['Signal lost.', 'Please stand by.', 'Tuning…', 'Reconnecting.', 'No signal.'];
 
 /* Shot 6: warning dialogs pile up in a cascade (one every 55 ms from 3.75 s), then vanish on the cut */
 function syncDialogs() {

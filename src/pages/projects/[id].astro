@@ -16,7 +16,7 @@ const { Content } = await render(project);
 <Base title={`${data.name} · onnwee`} description={data.summary}>
   <section id="work" class="project-page" data-spot="acid" data-ch="02" data-name={data.name} aria-labelledby="project-h">
     <Window title={data.name} article status={[data.sample ? 'sample entry' : data.state, data.status]}>
-      <a class="back" href="/projects/">Back to things I built</a>
+      <a class="back" href="/projects/">All projects</a>
       <h1 id="project-h" class="card-title">{data.name}</h1>
       <p>{data.summary}</p>
       <dl class="facts">

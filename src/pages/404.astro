@@ -2,12 +2,12 @@
 import Base from '../layouts/Base.astro';
 import Window from '../components/Window.astro';
 ---
-<Base title="No signal · onnwee" description="This channel is off the air." intro={false} scene="nosignal">
+<Base title="Page not found · onnwee" description="This page could not be found." intro={false} scene="nosignal">
   <section class="nosignal" data-spot="signal" data-ch="00" data-name="no signal" aria-labelledby="ns-h">
-    <Window title="404" slotClass="ns-card" status={['channel not found', 'CH 00']}>
-      <h1 id="ns-h" class="ns-title">Nothing on this channel.</h1>
-      <p>The page you asked for isn't here. It may have moved, or it never existed.</p>
-      <div class="buttons"><a class="btn default" href="/">Back to CH 01</a></div>
+    <Window title="404" slotClass="ns-card" status={['page not found', 'CH 00']}>
+      <h1 id="ns-h" class="ns-title">Page not found.</h1>
+      <p>Check the address or return to the homepage.</p>
+      <div class="buttons"><a class="btn default" href="/">Home</a></div>
     </Window>
   </section>
 </Base>
