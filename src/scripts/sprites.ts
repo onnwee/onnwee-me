@@ -96,10 +96,10 @@ const SPRITES: Sprite[] = [
   /* The dead: a wallpaper of hooded skulls that swells and shrinks in ripples, brush strokes of dead faces
      dragged across the page, Vesalius's skeleton and Posada's Catrina (both public domain) */
   { kind: 'tiles', in: 'dead', offset: -0.8, size: 0.1, rows: 5, alpha: 0.4, speed: 0.7 },
-  { kind: 'image', src: '/sprites/vesalius.webp', in: 'dead', x: 0.26, offset: 0.34, size: 0.56, rotate: 2, plate: true },
+  { kind: 'image', src: '/sprites/vesalius.webp', in: 'dead', x: 0.26, offset: 0.25, size: 0.56, rotate: 2, plate: true },
   /* drawn across the skeleton and under the Catrina */
   { kind: 'strokes', stamp: 'dead', in: 'dead', offset: 0.05, size: 0.1, count: 3, length: 60, spread: 0.55 },
-  { kind: 'image', src: '/sprites/catrina.webp', in: 'dead', x: 0.66, offset: 0.64, size: 1.05, rotate: -2, plate: true },
+  { kind: 'image', src: '/sprites/catrina.webp', in: 'dead', x: 0.66, offset: 0.4, size: 1.05, rotate: -2, plate: true },
   /* Everyone else, sprayed in a spiral around the one who was caught */
   { kind: 'swarm', in: 'contact', x: 0.7, offset: -0.05, size: 0.9, count: 56, speed: 0.85, stamps: ['dead', 'phone', 'heart', 'dead', 'face', 'phone'], follow: true },
   /* Juxtaposition: a playful portrait, caught by face recognition (photo by Björn Pierre, Unsplash, edited) */

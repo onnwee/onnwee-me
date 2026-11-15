@@ -134,8 +134,8 @@ section[data-spot="blood"]  { --local: var(--blood); }
 /* Channel surf: short reels back to back, one clip each, with nothing over the picture */
 .surf .reel-track { height: 130vh; }
 .surf + .surf, .surf + .reel { margin-top: calc(-1 * clamp(160px, 34vh, 360px)); }
-/* Roll call: room for the skeletons to march past under the card */
-.dead { min-height: 230vh; }
+/* Roll call: room for the two remaining illustrations, including on short screens */
+.dead { min-height: max(900px, 150vh); }
 
 /* The on-screen display: channel number in the corner after every channel change */
 .osd {
