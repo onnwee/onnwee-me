@@ -1,6 +1,6 @@
 ---
 name: aski
-summary: "A text-art studio in the browser. Type once, compare font families side by side, pick colours, then copy the text or export an image or an animated GIF."
+summary: "A text-art studio in the browser. Type once, compare font families side by side, pick colors, then copy the text or export an image or an animated GIF."
 stack: TypeScript
 state: in development
 status: "19 fonts"

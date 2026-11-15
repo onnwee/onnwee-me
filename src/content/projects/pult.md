@@ -1,6 +1,6 @@
 ---
 name: pult
-summary: "A terminal app that themes your other apps from one palette. It changes only their colours and records every change, so it can put your configs back exactly as they were."
+summary: "A terminal app that themes your other apps from one palette. It changes only their colors and records every change, so it can put your configs back exactly as they were."
 stack: Go
 state: early 0.x
 status: "undo included"

@@ -22,4 +22,4 @@ downstream:
 
 Every document keeps its original file, where it came from and a note on rights. Nothing new is published until someone has reviewed it. The operator's side is a command-line tool that acquires files in batches that can be resumed, extracts text and covers, and backs up and restores the catalog.
 
-The engine's own repository is private. The archives built on it are public, and the rights to the documents they hold are mostly unknown: none of them grants a licence to reuse the documents.
+The engine's own repository is private. The archives built on it are public, and the rights to the documents they hold are mostly unknown: none of them grants a license to reuse the documents.
